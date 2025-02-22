@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="sentinel">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex bg-secondary min-h-screen">
+    <aside class="w-64 bg-primary text-white p-6 space-y-6">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl font-bold">SENTINEL</span>
+        </div>
+        <nav class="space-y-4">
+            <a href="#" class="flex items-center space-x-3 p-3 bg-white text-primary rounded-lg">
+                <span>🏠 Home</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
+                <span>📦 Task</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
+                <span>📄 Documents</span>
+            </a>
+            <a href="#" class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
+                <span>📋 Activities</span>
+            </a>
+        </nav>
+        <div class="mt-10">
+            <a href="#" class="flex items-center space-x-3 p-3 bg-white text-primary rounded-lg">
+                <span>🔄 Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 bg-base-100 rounded-tl-3xl shadow-lg">
+        <header class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-semibold">Good morning, Pukinginamo!</h1>
+                <p class="text-neutral">Let's be productive together today!</p>
+            </div>
+            <button class="btn btn-primary">+ Request</button>
+        </header>
+
+        <!-- Table -->
+        <section class="mt-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="text-left bg-secondary text-gray-700">
+                            <th class="p-3">Activities</th>
+                            <th class="p-3">Type</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3">Submission Date</th>
+                            <th class="p-3">Feedback</th>
+                            <th class="p-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table Row -->
+                        <tr class="border-t">
+                            <td class="p-3">Contract</td>
+                            <td class="p-3">Contract</td>
+                            <td class="p-3"><span class="badge badge-warning">Pending Review</span></td>
+                            <td class="p-3">12/12/12</td>
+                            <td class="p-3">Lorem Ipsum</td>
+                            <td class="p-3"><button class="btn btn-outline btn-sm">✏️ Edit</button></td>
+                        </tr>
+                        <tr class="border-t">
+                            <td class="p-3">Contract</td>
+                            <td class="p-3">Contract</td>
+                            <td class="p-3"><span class="badge badge-warning">Pending Review</span></td>
+                            <td class="p-3">12/12/12</td>
+                            <td class="p-3">Lorem Ipsum</td>
+                            <td class="p-3"><button class="btn btn-outline btn-sm">✏️ Edit</button></td>
+                        </tr>
+                        <tr class="border-t">
+                            <td class="p-3">Contract</td>
+                            <td class="p-3">Contract</td>
+                            <td class="p-3"><span class="badge badge-warning">Pending Review</span></td>
+                            <td class="p-3">12/12/12</td>
+                            <td class="p-3">Lorem Ipsum</td>
+                            <td class="p-3"><button class="btn btn-outline btn-sm">✏️ Edit</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="mt-4 flex justify-between">
+                    <input type="text" placeholder="Search activities" class="input input-bordered w-64" />
+                    <button class="btn btn-primary">See all history</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Right Panel -->
+    <aside class="w-80 bg-secondary p-6 rounded-tr-3xl">
+        <div class="flex flex-col items-center">
+            <img src="https://via.placeholder.com/80" alt="Profile" class="rounded-full w-20 h-20">
+            <h2 class="mt-2 text-lg font-semibold">John Doe</h2>
+            <p class="text-neutral">Business Department</p>
+            <button class="btn btn-outline w-full mt-4">⚙️ Account Settings</button>
+        </div>
+
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold">Notifications</h3>
+            <ul class="mt-2 space-y-2">
+                <li class="flex items-center">
+                    ✅ Contract was <span class="text-success ml-1">approved</span> by CEO <span class="text-neutral ml-2">59 minutes ago</span>
+                </li>
+                <li class="flex items-center">
+                    ✅ Contract was <span class="text-success ml-1">approved</span> by CEO <span class="text-neutral ml-2">59 minutes ago</span>
+                </li>
+                <li class="flex items-center">
+                    ✅ Contract was <span class="text-success ml-1">approved</span> by CEO <span class="text-neutral ml-2">59 minutes ago</span>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+</body>
+</html>
