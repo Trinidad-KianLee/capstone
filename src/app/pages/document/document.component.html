@@ -1,1 +1,114 @@
-<p>document works!</p>
+<div class="flex">
+    <!-- Left: Document List -->
+    <div class="w-2/3 p-6">
+      <h1 class="text-2xl font-bold mb-4">Document List</h1>
+  
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left py-2">Document</th>
+            <th class="text-left py-2">Type</th>
+            <th class="text-left py-2">Status</th>
+            <th class="text-left py-2">Submission Date</th>
+            <th class="text-left py-2">Feedback</th>
+            <th class="text-left py-2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let doc of documents" class="border-b hover:bg-gray-100">
+            <td class="py-3">Document</td>
+            <td class="py-3">Type</td>
+            <td class="py-3">
+              <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">Pending Review</span>
+            </td>
+            <td class="py-3">12/12/12</td>
+            <td class="py-3">Lorem ipsum</td>
+            <td class="py-3">
+              <button class="text-blue-500 hover:text-blue-700">✏️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <!-- Load More Button -->
+      <div class="text-center mt-6">
+        <button class="border border-blue-500 text-blue-500 px-6 py-2 rounded hover:bg-blue-500 hover:text-white">
+          Load more
+        </button>
+      </div>
+    </div>
+  
+    <!-- Right: Sidebar and Profile Section -->
+    <div class="w-1/3 p-6 flex flex-col gap-6">
+      <!-- Sidebar -->
+      <div class="bg-gray-100 p-4 rounded">
+        <input type="text" placeholder="Search activities" class="w-full p-2 border rounded mb-4" />
+  
+        <h2 class="text-lg font-semibold mb-2">Keywords</h2>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="bg-gray-300 text-gray-700 px-2 py-1 rounded flex items-center">
+            Document <span class="ml-2 text-red-600 cursor-pointer">❌</span>
+          </span>
+          <span class="bg-gray-300 text-gray-700 px-2 py-1 rounded flex items-center">
+            Document <span class="ml-2 text-red-600 cursor-pointer">❌</span>
+          </span>
+          <span class="bg-gray-300 text-gray-700 px-2 py-1 rounded flex items-center">
+            Document <span class="ml-2 text-red-600 cursor-pointer">❌</span>
+          </span>
+        </div>
+  
+        <h2 class="text-lg font-semibold mb-2">Type</h2>
+        <div class="mb-4">
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" checked />
+            <span>Label</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" />
+            <span>Label</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" checked />
+            <span>Label</span>
+          </label>
+        </div>
+  
+        <h2 class="text-lg font-semibold mb-2">Status</h2>
+        <div>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" checked />
+            <span>Label</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" checked />
+            <span>Label</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" checked />
+            <span>Label</span>
+          </label>
+        </div>
+      </div>
+  
+      <!-- Profile Section -->
+      <div class="bg-gray-50 p-4 rounded">
+        <h2 class="text-gray-600 text-sm">Profile</h2>
+        <h3 class="text-lg font-bold">John Doe</h3>
+        <p class="text-gray-500">Business Department</p>
+        <button class="border border-gray-400 px-4 py-2 w-full rounded mt-2">⚙ ACCOUNT SETTINGS</button>
+  
+        <h2 class="text-lg font-semibold mt-4">Notifications</h2>
+        <ul class="mt-2">
+          <li class="flex items-center">
+            <span class="text-green-500">✔</span>
+            <p class="ml-2">Contract approved by CEO <span class="text-gray-400">1 hr ago</span></p>
+          </li>
+          <li class="flex items-center">
+            <span class="text-green-500">✔</span>
+            <p class="ml-2">New task assigned <span class="text-gray-400">2 hrs ago</span></p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
