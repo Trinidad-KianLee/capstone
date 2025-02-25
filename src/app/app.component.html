@@ -1,29 +1,33 @@
 <div class="flex bg-secondary min-h-screen">
+  @if(!without()){
   <aside class="w-64 bg-primary text-white p-6 space-y-6">
-      <h1 class="text-xl font-bold">SENTINEL</h1>
-      <nav class="space-y-4">
-          <a routerLink="/dashboard" routerLinkActive="bg-white text-primary" class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg font-semibold">
-              🏠 Home
-          </a>
-          <a routerLink="/task" routerLinkActive="bg-white text-primary" class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
-              📦 Task
-          </a>
-          <a routerLink="/document" routerLinkActive="bg-white text-primary" class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
-              📄 Documents
-          </a>
-          <a routerLink="/activities" routerLinkActive="bg-white text-primary" class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
-              📋 Activities
-          </a>
-      </nav>
-      <div class="mt-10">
-          <a href="#"  class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
-              🔄 Logout
-          </a>
-      </div>
+    <h1 class="text-xl font-bold">SENTINEL</h1>
+    <nav class="space-y-4">
+      <a routerLink="/dashboard" routerLinkActive="bg-white text-primary"
+        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg font-semibold">
+        🏠 Home
+      </a>
+      <a routerLink="/task" routerLinkActive="bg-white text-primary"
+        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
+        📦 Task
+      </a>
+      <a routerLink="/document" routerLinkActive="bg-white text-primary"
+        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
+        📄 Documents
+      </a>
+      <a routerLink="/activities" routerLinkActive="bg-white text-primary"
+        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
+        📋 Activities
+      </a>
+    </nav>
+    <div class="mt-10">
+      <a href="#" (click)="logout()" class="flex items-center space-x-3 p-3 hover:bg-white hover:text-primary rounded-lg">
+        🔄 Logout
+      </a>
+    </div>
   </aside>
-
+  }
   <main class="w-full h-full">
     <router-outlet> </router-outlet>
   </main>
 </div>
-
