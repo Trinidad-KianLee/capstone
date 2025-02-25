@@ -10,7 +10,18 @@ export class PostService {
 
   constructor(private http: HttpClient) { }
 
+  // Fetch all posts
   getPosts(): Observable<any> {
     return this.http.get<any>(this.baseUrl);
+  }
+
+  // Delete a post by ID
+  deletePost(postId: string): Observable<any> {
+    console.log("Deleted")
+    const url = `${this.baseUrl}/${postId}`;
+    console.log(url)
+    return this.http.delete<any>(url);
+
+    
   }
 }

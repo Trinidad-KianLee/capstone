@@ -23,7 +23,7 @@
             <td class="py-3">{{post.submission_date | date:'mediumDate' }}</td>
             <td class="py-3">{{post.feedback}}</td>
             <td class="py-3">
-              <button class="text-blue-500 hover:text-blue-700">{{post.action}}</button>
+              <button (click)="delete(post.id)" class="text-blue-500 hover:text-blue-700 btn">{{post.action}}</button>
             </td>
           </tr>
         </tbody>
