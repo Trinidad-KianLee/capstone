@@ -1,11 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { PostService } from '../../services/post.service';
+import { CommonModule, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-document',
-  imports: [],
+  imports: [CommonModule, DatePipe],
   templateUrl: './document.component.html',
   styleUrl: './document.component.css'
 })
-export class DocumentComponent {
+export class DocumentComponent implements OnInit {
+  posts: any[] = [];
 
+  constructor(private postService: PostService) {}
+
+  ngOnInit(): void {
+    this.postService.getPosts().subscribe(data => {
+      this.posts = data.items; // 'items' contains the records
+      console.log(this.posts);
+    });
+  }
 }
