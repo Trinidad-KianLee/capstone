@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { PostService } from '../../services/post.service';
+import { PostService } from '../../services/post/post.service';
 import { CommonModule, DatePipe } from '@angular/common';
 
 @Component({
