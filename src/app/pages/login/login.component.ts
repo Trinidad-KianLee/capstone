@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-login',
   templateUrl: './login.component.html',
   imports: [CommonModule, FormsModule],
-  styleUrls: ['./login.component.css'] // Fix: 'styleUrl' should be 'styleUrls'
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   email: string = '';
@@ -20,9 +20,9 @@ export class LoginComponent {
   async onLogin() {
     try {
       await this.authService.login(this.email, this.password);
-      this.router.navigate(['/dashboard']); // Redirect after login
+      this.router.navigate(['/dashboard']);
     } catch (error) {
-      alert("MALI")
+      alert("Wrong credentials")
       this.errorMessage = 'Invalid email or password!';
     }
   }

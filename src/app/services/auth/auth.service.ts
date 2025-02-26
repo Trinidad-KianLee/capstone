@@ -8,7 +8,7 @@ export class AuthService {
   private pb: PocketBase;
 
   constructor() {
-    this.pb = new PocketBase('http://127.0.0.1:8090'); // Replace with your PocketBase URL
+    this.pb = new PocketBase('http://127.0.0.1:8090'); 
 
    
     const storedToken = localStorage.getItem('pb_auth_token');
@@ -21,7 +21,6 @@ export class AuthService {
     try {
       const authData = await this.pb.collection('users').authWithPassword(email, password);
 
-      // Store session token
       localStorage.setItem('pb_auth_token', this.pb.authStore.exportToCookie());
       console.log('Login successful:', authData);
 
