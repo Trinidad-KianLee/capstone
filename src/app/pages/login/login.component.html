@@ -1,0 +1,28 @@
+<div class="h-screen flex items-center justify-center bg-gray-100">
+    <div class="flex w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="w-1/2 bg-blue-600 p-10 flex flex-col justify-center text-white">
+            <h1 class="text-4xl font-bold leading-tight">Exceed Expectations, Every Time.</h1>
+            <p class="mt-4">Dedicated to your Success</p>
+        </div>
+        
+        <div class="w-1/2 p-10 flex flex-col justify-center">
+            <h2 class="text-2xl font-bold">Log In to Sentinel</h2>
+            <p class="text-gray-500 text-sm mb-6">Enter your credentials to continue.</p>
+            
+
+            <form (submit)="onLogin(); $event.preventDefault()">
+                <label class="block text-gray-700">EMAIL</label>
+                <input type="email" name="email" [(ngModel)]="email"  placeholder="johndoe@email.com" class="w-full p-3 border rounded-lg mt-1 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 ">
+                
+                <label class="block text-gray-700">PASSWORD</label>
+                <input type="password" name="password" [(ngModel)]="password"  placeholder="••••••••••••" class="w-full p-3 border rounded-lg mt-1 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                
+                <button class="w-full bg-blue-600 text-white p-3 rounded-lg flex items-center justify-center hover:bg-blue-700">
+                    CONTINUE →
+                </button>
+                
+                <p class="text-gray-500 text-sm text-right mt-4 italic">Forgot your password?</p>
+            </form>
+        </div>
+    </div>
+</div>

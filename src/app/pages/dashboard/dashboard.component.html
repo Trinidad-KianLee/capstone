@@ -2,17 +2,17 @@
     <div class="grow p-8 pr-0">
         <header class="flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-semibold">Good morning, Pukinginaka!</h1>
+                <h1 class="text-2xl font-semibold">Good morning, {{ firstName }}!</h1>
                 <p class="text-neutral">Let's be productive today!</p>
             </div>
-            <button class="btn btn-primary">+ Request</button>
+            <button class="btn btn-primary" (click)="navigateToRequest()">+ Request</button>
         </header>
     
         <section class="mt-6">
             <div class="bg-white p-6 rounded-lg shadow-md">
                 <table class="w-full border-collapse">
                     <thead>
-                        <tr class="text-left bg-secondary text-neutral">
+                        <tr class="text-left  text-neutral">
                             <th class="p-3">Activities</th>
                             <th class="p-3">Type</th>
                             <th class="p-3">Status</th>
@@ -40,7 +40,7 @@
         </section>
     </div>
     <div class="">
-        <aside class="w-80 bg-secondary p-6 rounded-tr-3xl">
+        <aside class="w-80  p-6 rounded-tr-3xl">
             <div class="flex flex-col items-center">
                 <img src="https://via.placeholder.com/80" alt="Profile" class="rounded-full w-20 h-20">
                 <h2 class="mt-2 text-lg font-semibold">John Doe</h2>
