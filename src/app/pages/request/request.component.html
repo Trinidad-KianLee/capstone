@@ -1,0 +1,92 @@
+<div class="flex min-h-screen">
+    <!-- Main Content / Request Form -->
+    <div class="flex-grow p-8 bg-white">
+      <h1 class="text-2xl font-semibold mb-2">REQUEST A CONTRACT NOW</h1>
+      <p class="text-gray-600">
+        Please select the type of contract you are requesting
+      </p>
+  
+      <!-- Contract Type Options (6 placeholders, in 2 columns) -->
+      <div class="mt-8 grid grid-cols-2 gap-8">
+        <!-- Row 1 -->
+        <div class="border border-blue-500 rounded-lg p-6 text-center cursor-pointer hover:bg-blue-50">
+          <span class="font-medium text-blue-600">Service Agreement</span>
+        </div>
+        <div class="border border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-100">
+          <span class="font-medium text-gray-600">Service Agreement</span>
+        </div>
+  
+        <!-- Row 2 -->
+        <div class="border border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-100">
+          <span class="font-medium text-gray-600">Service Agreement</span>
+        </div>
+        <div class="border border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-100">
+          <span class="font-medium text-gray-600">Service Agreement</span>
+        </div>
+  
+        <!-- Row 3 -->
+        <div class="border border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-100">
+          <span class="font-medium text-gray-600">Service Agreement</span>
+        </div>
+        <div class="border border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-100">
+          <span class="font-medium text-gray-600">Service Agreement</span>
+        </div>
+      </div>
+  
+      <!-- Step Indicators -->
+      <div class="flex items-center space-x-6 mt-10">
+        <!-- Active Step -->
+        <div class="flex items-center space-x-2">
+          <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm">
+            1
+          </div>
+          <span class="text-blue-600 font-medium">Select Contract</span>
+        </div>
+        <!-- Inactive Steps -->
+        <div class="flex items-center space-x-2 opacity-50">
+          <div class="w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm">
+            2
+          </div>
+          <span class="text-gray-600">Fill Details</span>
+        </div>
+        <div class="flex items-center space-x-2 opacity-50">
+          <div class="w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm">
+            3
+          </div>
+          <span class="text-gray-600">Review &amp; Submit</span>
+        </div>
+      </div>
+  
+      <!-- Next Button -->
+      <button class="btn btn-primary mt-6">
+        Next
+      </button>
+    </div>
+  
+    <!-- Right Sidebar / Profile & Notifications -->
+    <aside class="w-80 bg-gray-50 border-l p-8">
+      <div class="flex flex-col items-center">
+        <img
+          src="https://via.placeholder.com/80"
+          alt="Profile"
+          class="rounded-full w-20 h-20"
+        />
+        <h2 class="mt-2 text-lg font-semibold">John Doe</h2>
+        <p class="text-neutral">Business Department</p>
+        <button class="btn btn-outline w-full mt-4">⚙️ Account Settings</button>
+      </div>
+  
+      <div class="mt-8">
+        <h3 class="text-lg font-semibold mb-2">Notifications</h3>
+        <ul class="space-y-2 text-neutral">
+          <li class="flex items-center">
+            ✅ Contract approved by CEO <span class="ml-2 text-sm">1 hr ago</span>
+          </li>
+          <li class="flex items-center">
+            ✅ New task assigned <span class="ml-2 text-sm">2 hrs ago</span>
+          </li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+  

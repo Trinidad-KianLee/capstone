@@ -14,15 +14,18 @@ export class AuthService {
     if (storedToken) {
       this.pb.authStore.loadFromCookie(storedToken);
     }
+
+    // ✅ Listen to auth changes to always store the token
+    this.pb.authStore.onChange(() => {
+      localStorage.setItem('pb_auth_token', this.pb.authStore.exportToCookie());
+    });
   }
 
   async login(email: string, password: string) {
     try {
       const authData = await this.pb.collection('users').authWithPassword(email, password);
-
       localStorage.setItem('pb_auth_token', this.pb.authStore.exportToCookie());
       console.log('Login successful:', authData);
-
       return authData;
     } catch (error) {
       console.error('Login failed:', error);
@@ -45,7 +48,6 @@ export class AuthService {
   }
 
   getUser(): any {
-    return this.user ? this.user : {}; // ✅ Ensures an empty object is returned instead of null
+    return this.user ? this.user : {};
   }
-  
 }
