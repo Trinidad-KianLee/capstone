@@ -16,6 +16,7 @@
           <th class="text-left py-2">Status</th>
           <th class="text-left py-2">Submission Date</th>
           <th class="text-left py-2">Feedback</th>
+          <th class="text-left py-2">Sub Type</th>
           <th class="text-left py-2">Attachment</th>
           <th class="text-left py-2">Action</th>
         </tr>
@@ -36,6 +37,11 @@
             {{ post.submission_date | date: 'mediumDate' }}
           </td>
           <td class="py-3">{{ post.feedback }}</td>
+
+          <!-- Show subType if present -->
+          <td class="py-3">
+            {{ post.sub_type || 'N/A' }}
+          </td>
 
           <!-- Thumbnail if there's an attachment -->
           <td class="py-3">
@@ -80,27 +86,16 @@
 </div>
 
 <!-- MODAL for full-screen image with translucent overlay -->
-<!-- 
-  "bg-black bg-opacity-50" => 50% black. 
-  "bg-black/40" => 40% black. 
-  Tweak as you like to see the background more clearly.
--->
 <div
   class="fixed inset-0 flex items-center justify-center bg-black/40"
   *ngIf="showModal"
 >
-  <!-- 
-    The container for the image:
-    - "max-w-4xl max-h-[90%]" to limit size
-    - "bg-white p-4 rounded relative" for styling
-  -->
   <div class="bg-white p-4 rounded relative max-w-4xl max-h-[90%]">
     <img
       [src]="selectedImageUrl"
       alt="Full image"
       class="max-h-[80vh] max-w-full object-contain"
     />
-    <!-- Close button -->
     <button
       class="absolute top-2 right-2 text-black bg-gray-200 rounded px-2 py-1 hover:bg-gray-300"
       (click)="closeModal()"

@@ -27,6 +27,7 @@ export class DocumentComponent implements OnInit {
     this.errorMsg = null;
     this.postService.getPosts().subscribe({
       next: (data) => {
+        // Typically, PocketBase returns { items: [...], ... }
         this.posts = data.items || data;
         console.log('Fetched docs:', this.posts);
       },

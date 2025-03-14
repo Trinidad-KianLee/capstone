@@ -55,10 +55,18 @@ export class RequestComponent {
   selectedFile?: File;
   fileRequiredError = false; // If user tries to submit w/o file
 
+  // Sub-type
+  selectedSubType: string = '';
+  subTypeError = false; // Show a red error message if sub-type is required but not chosen
+
+  // For success notification
+  submitSuccess = false;
+
   constructor(private postService: PostService) {}
 
   // Navigation
   goNext() {
+    if (!this.selectedPlaceholder) return;
     this.step = 2;
   }
   goBack() {
@@ -78,7 +86,7 @@ export class RequestComponent {
     } else {
       this.selectedFile = input.files[0];
     }
-    this.fileRequiredError = false; // Clear error if user picks a file
+    this.fileRequiredError = false;
   }
 
   // Called on "Submit"
@@ -89,7 +97,18 @@ export class RequestComponent {
       return;
     }
 
-    // 2) Build FormData
+    // 2) If user selected "Contracts" or "Regulatory Compliance", sub-type is required
+    if (
+      (this.selectedPlaceholder === 'Contracts' ||
+        this.selectedPlaceholder === 'Regulatory Compliance') &&
+      !this.selectedSubType
+    ) {
+      this.subTypeError = true;
+      return;
+    }
+    this.subTypeError = false;
+
+    // 3) Build FormData
     const formData = new FormData();
     formData.append('document', this.selectedPlaceholder || 'N/A');
     formData.append('type', 'Request');
@@ -100,14 +119,20 @@ export class RequestComponent {
     formData.append('purpose', this.purpose);
     formData.append('message', this.message);
 
+    // 4) Add sub_type
+    formData.append('sub_type', this.selectedSubType || '');
+
     // Must have a file
     formData.append('attachment', this.selectedFile);
 
-    // 3) Submit to PocketBase
+    // 5) Submit to PocketBase
     this.postService.createPost(formData).subscribe({
       next: (res) => {
         console.log('Created new document:', res);
-        // Optionally reset form or navigate
+        this.submitSuccess = true;
+        setTimeout(() => {
+          this.submitSuccess = false;
+        }, 2000);
       },
       error: (err) => {
         console.error('Error creating document:', err);

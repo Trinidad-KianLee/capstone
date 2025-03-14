@@ -57,9 +57,23 @@
             <ng-container *ngIf="selectedPlaceholder === 'Contracts'; else checkReg">
               <label class="block mb-4">
                 <span class="text-gray-700">Select Sub-Contract Type</span>
-                <select class="select select-bordered w-full mt-1">
-                  <option *ngFor="let sub of subContracts">{{ sub }}</option>
+                <select
+                  class="select select-bordered w-full mt-1"
+                  [(ngModel)]="selectedSubType"
+                >
+                  <option value="">--Select a Sub-Contract Type--</option>
+                  <option *ngFor="let sub of subContracts" [value]="sub">
+                    {{ sub }}
+                  </option>
                 </select>
+
+                <!-- Red error if subTypeError is true -->
+                <div
+                  *ngIf="subTypeError"
+                  class="text-red-600 text-sm mt-1"
+                >
+                  Please select a sub-type.
+                </div>
               </label>
             </ng-container>
 
@@ -68,9 +82,23 @@
               <ng-container *ngIf="selectedPlaceholder === 'Regulatory Compliance'; else normalForm">
                 <label class="block mb-4">
                   <span class="text-gray-700">Select Sub-Regulatory Type</span>
-                  <select class="select select-bordered w-full mt-1">
-                    <option *ngFor="let reg of subReg">{{ reg }}</option>
+                  <select
+                    class="select select-bordered w-full mt-1"
+                    [(ngModel)]="selectedSubType"
+                  >
+                    <option value="">--Select a Regulatory Type--</option>
+                    <option *ngFor="let reg of subReg" [value]="reg">
+                      {{ reg }}
+                    </option>
                   </select>
+
+                  <!-- Red error if subTypeError is true -->
+                  <div
+                    *ngIf="subTypeError"
+                    class="text-red-600 text-sm mt-1"
+                  >
+                    Please select a sub-type.
+                  </div>
                 </label>
               </ng-container>
             </ng-template>
@@ -144,6 +172,14 @@
               >
                 Submit
               </button>
+            </div>
+
+            <!-- Show success notification if "submitSuccess" is true -->
+            <div
+              *ngIf="submitSuccess"
+              class="mt-4 p-3 bg-green-100 text-green-700 rounded"
+            >
+              Successfully submitted!
             </div>
           </div>
         </ng-template>
