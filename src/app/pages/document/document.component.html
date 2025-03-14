@@ -1,93 +1,100 @@
 <div class="flex">
-    <div class="p-8 w-full overflow-auto">
-      <h1 class="text-2xl font-bold mb-4">Document List</h1>
-  
-      <table class="w-full border-collapse">
-        <thead>
-          <tr class="border-b">
-            <th class="text-left py-2">Document</th>
-            <th class="text-left py-2">Type</th>
-            <th class="text-left py-2">Status</th>
-            <th class="text-left py-2">Submission Date</th>
-            <th class="text-left py-2">Feedback</th>
-            <th class="text-left py-2">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let post of posts" class="border-b hover:bg-gray-100">
-            <td class="py-3">{{post.document}}</td>
-            <td class="py-3">{{post.type}}</td>
-            <td class="py-3">
-              <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">{{post.status}}</span>
-            </td>
-            <td class="py-3">{{post.submission_date | date:'mediumDate' }}</td>
-            <td class="py-3">{{post.feedback}}</td>
-            <td class="py-3">
-              <button (click)="delete(post.id)" class="text-blue-500 hover:text-blue-700 btn">{{post.action}}</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-  
-      <!-- Load More Button -->
-      <div class="text-center mt-6">
-        <button class="border border-blue-500 text-blue-500 px-6 py-2 rounded hover:bg-blue-500 hover:text-white">
-          Load more
-        </button>
-      </div>
+  <div class="p-8 w-full overflow-auto">
+    <h1 class="text-2xl font-bold mb-4">Document List</h1>
+
+    <!-- Error message if any -->
+    <div *ngIf="errorMsg" class="text-red-500 mb-4">
+      {{ errorMsg }}
     </div>
-  
-    <div class="w-96 flex flex-col gap-6">
-        <div class="bg-gray-100 p-4 rounded">
-          <input type="text" placeholder="Search activities" class="w-full p-2 border rounded mb-4" />
-    
-          <h2 class="text-lg font-semibold mb-2">Keywords</h2>
-          <div class="flex flex-wrap gap-2 mb-4">
-            <span class="bg-gray-300 text-gray-700 px-2 py-1 rounded flex items-center">
-              Document <span class="ml-2 text-red-600 cursor-pointer">❌</span>
+
+    <!-- Table of documents -->
+    <table class="w-full border-collapse" *ngIf="!errorMsg">
+      <thead>
+        <tr class="border-b">
+          <th class="text-left py-2">Document</th>
+          <th class="text-left py-2">Type</th>
+          <th class="text-left py-2">Status</th>
+          <th class="text-left py-2">Submission Date</th>
+          <th class="text-left py-2">Feedback</th>
+          <th class="text-left py-2">Attachment</th>
+          <th class="text-left py-2">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let post of posts"
+          class="border-b hover:bg-gray-100"
+        >
+          <td class="py-3">{{ post.document }}</td>
+          <td class="py-3">{{ post.type }}</td>
+          <td class="py-3">
+            <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm">
+              {{ post.status }}
             </span>
-            <span class="bg-gray-300 text-gray-700 px-2 py-1 rounded flex items-center">
-              Document <span class="ml-2 text-red-600 cursor-pointer">❌</span>
-            </span>
-            <span class="bg-gray-300 text-gray-700 px-2 py-1 rounded flex items-center">
-              Document <span class="ml-2 text-red-600 cursor-pointer">❌</span>
-            </span>
-          </div>
-    
-          <h2 class="text-lg font-semibold mb-2">Type</h2>
-          <div class="mb-4">
-            <label class="flex items-center space-x-2">
-              <input type="checkbox" checked />
-              <span>Label</span>
-            </label>
-            <label class="flex items-center space-x-2">
-              <input type="checkbox" />
-              <span>Label</span>
-            </label>
-            <label class="flex items-center space-x-2">
-              <input type="checkbox" checked />
-              <span>Label</span>
-            </label>
-          </div>
-    
-          <h2 class="text-lg font-semibold mb-2">Status</h2>
-          <div>
-            <label class="flex items-center space-x-2">
-              <input type="checkbox" checked />
-              <span>Label</span>
-            </label>
-            <label class="flex items-center space-x-2">
-              <input type="checkbox" checked />
-              <span>Label</span>
-            </label>
-            <label class="flex items-center space-x-2">
-              <input type="checkbox" checked />
-              <span>Label</span>
-            </label>
-          </div>
-        </div>
-    
-      </div>
-    
+          </td>
+          <td class="py-3">
+            {{ post.submission_date | date: 'mediumDate' }}
+          </td>
+          <td class="py-3">{{ post.feedback }}</td>
+
+          <!-- Show a small thumbnail if there's an attachment -->
+          <td class="py-3">
+            <div *ngIf="post.attachment; else noImage">
+              <img
+                [src]="getAttachmentUrl(post)"
+                alt="thumbnail"
+                class="h-12 w-auto cursor-pointer border"
+                (click)="openModal(post)"
+              />
+            </div>
+            <ng-template #noImage>
+              <span class="text-gray-400">No image</span>
+            </ng-template>
+          </td>
+
+          <td class="py-3">
+            <button
+              (click)="delete(post.id)"
+              class="text-blue-500 hover:text-blue-700 btn"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Load More Button -->
+    <div class="text-center mt-6">
+      <button
+        class="border border-blue-500 text-blue-500 px-6 py-2 rounded hover:bg-blue-500 hover:text-white"
+      >
+        Load more
+      </button>
+    </div>
   </div>
-  
+
+  <div class="w-96 flex flex-col gap-6">
+    <!-- Side panel or filters here -->
+  </div>
+</div>
+
+<!-- MODAL for full-screen image -->
+<div
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+  *ngIf="showModal"
+>
+  <div class="bg-white p-4 rounded relative max-w-4xl max-h-[90%]">
+    <img
+      [src]="selectedImageUrl"
+      alt="Full image"
+      class="max-h-[80vh] max-w-full object-contain"
+    />
+    <button
+      class="absolute top-2 right-2 text-black bg-gray-200 rounded px-2 py-1 hover:bg-gray-300"
+      (click)="closeModal()"
+    >
+      ✕
+    </button>
+  </div>
+</div>
