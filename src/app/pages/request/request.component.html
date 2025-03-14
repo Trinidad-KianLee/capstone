@@ -1,138 +1,193 @@
-<div class="flex min-h-screen">
-  <!-- Main Content -->
-  <div class="flex-grow p-8 bg-white">
-
-    <!-- STEP 1: Contract Selection -->
-    <ng-container *ngIf="step === 1; else step2">
-      <h1 class="text-2xl font-semibold mb-2">REQUEST A CONTRACT NOW</h1>
-      <p class="text-gray-600">
-        Please select the type of contract you are requesting
-      </p>
-
-      <!-- 2-column Grid of 6 Contract Placeholders -->
-      <div class="mt-8 grid grid-cols-2 gap-8">
-        <!-- Loop over 'placeholders' array -->
-        <a
-          *ngFor="let placeholder of placeholders; let i = index"
-          href="#"
-          class="border rounded-lg p-6 text-center block"
-          [ngClass]="{
-            'border-gray-300 text-gray-600 hover:bg-gray-100': selectedIndex !== i,
-            'border-blue-500 text-blue-600 bg-blue-50': selectedIndex === i
-          }"
-          (click)="selectPlaceholder($event, i)"
-        >
-          <span class="font-medium">
-            {{ placeholder }}
-          </span>
-        </a>
-      </div>
-
-      <!-- Step Indicators -->
-      <div class="flex items-center space-x-6 mt-10">
-        <!-- Active Step (Select Contract) -->
-        <div class="flex items-center space-x-2">
-          <div
-            class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm"
-          >
-            1
-          </div>
-          <span class="text-blue-600 font-medium">Select Contract</span>
-        </div>
-        <!-- Inactive Steps -->
-        <div class="flex items-center space-x-2 opacity-50">
-          <div
-            class="w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm"
-          >
-            2
-          </div>
-          <span class="text-gray-600">Fill Details</span>
-        </div>
-        <div class="flex items-center space-x-2 opacity-50">
-          <div
-            class="w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm"
-          >
-            3
-          </div>
-          <span class="text-gray-600">Review &amp; Submit</span>
-        </div>
-      </div>
-
-      <!-- Next Button triggers step 2 -->
-      <button class="btn btn-primary mt-6" (click)="goNext()">
-        Next
-      </button>
-    </ng-container>
-
-    <!-- STEP 2: Contract Information Form -->
-    <ng-template #step2>
-      <h1 class="text-2xl font-semibold mb-2">REQUEST A CONTRACT NOW</h1>
-      <p class="text-gray-600">
-        You’re almost done! Please upload required documents
-      </p>
-
-      <div class="mt-8 max-w-md">
-        <h2 class="font-semibold text-lg mb-4">Contract Information Form</h2>
-        <p class="text-sm text-gray-500 mb-6">
-          Please provide contract details
+<div class="flex min-h-screen bg-white">
+  <!-- MAIN CONTENT -->
+  <div class="flex-grow p-12">
+    <!-- The card: fixed min-height, flex layout, step indicators at bottom -->
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg min-h-[700px] flex flex-col justify-between">
+      
+      <!-- TOP SECTION: Title, Subheading, Step-Specific Content -->
+      <div>
+        <!-- Title + Dynamic Subheading -->
+        <h1 class="text-3xl font-semibold mb-2">REQUEST A CONTRACT NOW</h1>
+        <p class="text-gray-600 leading-relaxed">
+          <!-- Show different subheading depending on step -->
+          <ng-container *ngIf="step === 1">
+            Please select the type of contract you are requesting
+          </ng-container>
+          <ng-container *ngIf="step === 2">
+            You’re almost done! Please upload required documents.
+          </ng-container>
         </p>
 
-        <!-- Example Form Fields -->
-        <label class="block mb-4">
-          <span class="text-gray-700">Contract Name</span>
-          <input
-            type="text"
-            class="input input-bordered w-full mt-1"
-            placeholder="Contract Name"
-          />
-        </label>
+        <!-- STEP 1 CONTENT -->
+        <div *ngIf="step === 1; else step2Content" class="mt-8">
+          <!-- 2-column Grid of Buttons -->
+          <div class="grid grid-cols-2 gap-8">
+            <a
+              *ngFor="let placeholder of placeholders"
+              href="#"
+              class="border rounded-lg p-6 text-center block"
+              [ngClass]="{
+                'border-gray-300 text-gray-600 hover:bg-gray-100': selectedPlaceholder !== placeholder,
+                'border-blue-500 text-blue-600 bg-blue-50': selectedPlaceholder === placeholder
+              }"
+              (click)="selectPlaceholder($event, placeholder)"
+            >
+              <span class="font-medium">{{ placeholder }}</span>
+            </a>
+          </div>
 
-        <label class="block mb-4">
-          <span class="text-gray-700">Upload Documents</span>
-          <input
-            type="file"
-            class="file-input file-input-bordered w-full mt-1"
-          />
-        </label>
-
-        <label class="block mb-4">
-          <span class="text-gray-700">Value</span>
-          <input
-            type="number"
-            class="input input-bordered w-full mt-1"
-            placeholder="Value"
-          />
-        </label>
-
-        <label class="block mb-4">
-          <span class="text-gray-700">Delivery Note</span>
-          <input
-            type="text"
-            class="input input-bordered w-full mt-1"
-            placeholder="Delivery note"
-          />
-        </label>
-
-        <label class="flex items-center mb-4">
-          <input type="checkbox" class="checkbox mr-2" />
-          <span>
-            I accept the
-            <a href="#" class="underline text-blue-600">terms and T&amp;Cs</a>
-          </span>
-        </label>
-
-        <!-- Action Buttons -->
-        <div class="flex space-x-4">
-          <button (click)="goBack()" class="btn btn-outline">
-            Back
+          <!-- Next Button -->
+          <button
+            class="px-4 py-2 mt-8 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+            (click)="goNext()"
+            [disabled]="!selectedPlaceholder"
+          >
+            Next
           </button>
-          <button class="btn btn-primary">Submit</button>
+        </div>
+
+        <!-- STEP 2 CONTENT -->
+        <ng-template #step2Content>
+          <div class="mt-8">
+            <h2 class="font-semibold text-lg mb-2">Contract Information Form</h2>
+            <p class="text-sm text-gray-500 mb-6">
+              Please provide contract details
+            </p>
+
+            <!-- If user selected "Contracts", show sub-contract dropdown -->
+            <ng-container *ngIf="selectedPlaceholder === 'Contracts'; else checkReg">
+              <label class="block mb-4">
+                <span class="text-gray-700">Select Sub-Contract Type</span>
+                <select class="select select-bordered w-full mt-1">
+                  <option *ngFor="let sub of subContracts">{{ sub }}</option>
+                </select>
+              </label>
+            </ng-container>
+
+            <!-- If user selected "Regulatory Compliance", show its sub dropdown -->
+            <ng-template #checkReg>
+              <ng-container *ngIf="selectedPlaceholder === 'Regulatory Compliance'; else normalForm">
+                <label class="block mb-4">
+                  <span class="text-gray-700">Select Sub-Regulatory Type</span>
+                  <select class="select select-bordered w-full mt-1">
+                    <option *ngFor="let reg of subReg">{{ reg }}</option>
+                  </select>
+                </label>
+              </ng-container>
+            </ng-template>
+
+            <!-- If user selected anything else, show normal text -->
+            <ng-template #normalForm>
+              <p class="text-gray-700 mb-4">
+                Selected: {{ selectedPlaceholder }}
+              </p>
+            </ng-template>
+
+            <!-- Form Fields -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <!-- Purpose -->
+              <label class="block">
+                <span class="text-gray-700">Purpose</span>
+                <input
+                  type="text"
+                  class="input input-bordered w-full mt-1"
+                  placeholder="Purpose of the Contract"
+                />
+              </label>
+
+              <!-- Upload Documents -->
+              <label class="block">
+                <span class="text-gray-700">Upload Documents</span>
+                <input
+                  type="file"
+                  class="file-input file-input-bordered w-full mt-1"
+                />
+              </label>
+
+              <!-- Message (full width) -->
+              <label class="block sm:col-span-2">
+                <span class="text-gray-700">Message</span>
+                <input
+                  type="text"
+                  class="input input-bordered w-full mt-1"
+                  placeholder="Message for additional information"
+                />
+              </label>
+
+              <!-- Terms & Conditions -->
+              <label class="flex items-center sm:col-span-2">
+                <input type="checkbox" class="checkbox mr-2" />
+                <span>
+                  I accept the
+                  <a href="#" class="underline text-blue-600">terms and T&amp;Cs</a>
+                </span>
+              </label>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-6 mt-6">
+              <button
+                (click)="goBack()"
+                class="px-4 py-2 rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+              >
+                Back
+              </button>
+              <button
+                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+      
+      <!-- BOTTOM SECTION: Step Indicators (always at bottom of the card) -->
+      <div>
+        <div class="flex justify-center items-center space-x-6 mt-6">
+          <!-- Step 1 -->
+          <div class="flex items-center space-x-2">
+            <div
+              class="w-6 h-6 rounded-full flex items-center justify-center text-sm text-white"
+              [ngClass]="step === 1 ? 'bg-blue-600' : 'bg-gray-400'"
+            >
+              1
+            </div>
+            <span
+              [ngClass]="step === 1 ? 'text-blue-600 font-medium' : 'text-gray-600'"
+            >
+              Select Contract
+            </span>
+          </div>
+          <!-- Step 2 -->
+          <div class="flex items-center space-x-2">
+            <div
+              class="w-6 h-6 rounded-full flex items-center justify-center text-sm text-white"
+              [ngClass]="step === 2 ? 'bg-blue-600' : 'bg-gray-400'"
+            >
+              2
+            </div>
+            <span
+              [ngClass]="step === 2 ? 'text-blue-600 font-medium' : 'text-gray-600'"
+            >
+              Fill Details
+            </span>
+          </div>
+          <!-- Step 3 (not implemented) -->
+          <div class="flex items-center space-x-2 opacity-50">
+            <div
+              class="w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm"
+            >
+              3
+            </div>
+            <span class="text-gray-600">Review &amp; Submit</span>
+          </div>
         </div>
       </div>
-    </ng-template>
+    </div>
   </div>
 
-  <!-- Right Sidebar / Profile & Notifications -->
+  <!-- RIGHT SIDEBAR -->
   <aside class="w-80 bg-gray-50 border-l p-8">
     <div class="flex flex-col items-center">
       <img

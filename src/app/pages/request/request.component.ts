@@ -1,40 +1,61 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common'; // For *ngIf
+import { FormsModule } from '@angular/forms';   // For [(ngModel)]
 
 @Component({
   selector: 'app-request',
-  standalone: true,
-  imports: [CommonModule], // Required for *ngIf, etc.
+  standalone: true,          // Standalone component
   templateUrl: './request.component.html',
-  styleUrl: './request.component.css'
+  styleUrls: ['./request.component.css'],
+  imports: [CommonModule, FormsModule], // Import CommonModule & FormsModule
 })
 export class RequestComponent {
-  step = 1; // 1 = contract selection, 2 = form
-  selectedIndex: number | null = null; // Which placeholder is selected?
+  step = 1;
 
-  // Placeholder names
-  placeholders = [
-    'Service Agreement 1',
-    'Service Agreement 2',
-    'Service Agreement 3',
-    'Service Agreement 4',
-    'Service Agreement 5',
-    'Service Agreement 6',
+  selectedPlaceholder = '';
+
+  // Tiles in Step 1
+  placeholders: string[] = [
+    'Contracts',
+    'Demand Letters',
+    'Purchase Agreements',
+    'Regulatory Compliance',
+    'Others',
   ];
 
-  // Called when a user clicks a placeholder link
-  selectPlaceholder(event: MouseEvent, index: number) {
-    event.preventDefault(); // Prevent the page from scrolling/reloading
-    this.selectedIndex = index;
-  }
+  // Sub options if user selected "Contracts"
+  subContracts: string[] = [
+    '1.1 Contracts with vendors',
+    '1.2 Contracts with third party repair',
+    '1.3 Contracts/MOA with Partners',
+    '1.4 Contracts/MOA with Lessors',
+    '1.5 Contracts/MOA with Logistics',
+    '1.6 Contract/MOA with Dealers',
+    '1.7 Due Diligence'
+  ];
 
-  // Press "Next" to go to Step 2
+  // Sub options if user selected "Regulatory Compliance"
+  subReg: string[] = [
+    '4.1 BIR',
+    '4.2 SEC',
+    '4.3 Customs',
+    '4.4 NTC',
+    '4.5 BSP',
+    '4.6 DOLE',
+    '4.7 LGU- Makati',
+    '4.8 AMLC'
+  ];
+
   goNext() {
     this.step = 2;
   }
 
-  // Press "Back" in Step 2 to return to Step 1
   goBack() {
     this.step = 1;
+  }
+
+  selectPlaceholder(event: Event, placeholder: string) {
+    event.preventDefault();
+    this.selectedPlaceholder = placeholder;
   }
 }
