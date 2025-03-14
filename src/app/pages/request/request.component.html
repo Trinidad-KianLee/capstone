@@ -95,15 +95,18 @@
                 />
               </label>
 
-              <!-- Upload Documents (File) -->
+              <!-- Upload Documents (Required) -->
               <label class="block">
-                <span class="text-gray-700">Upload Documents</span>
-                <!-- Key: (change)="onFileSelected($event)" -->
+                <span class="text-gray-700">Upload Documents (required)</span>
                 <input
                   type="file"
                   class="file-input file-input-bordered w-full mt-1"
                   (change)="onFileSelected($event)"
                 />
+                <!-- Show error if user tries to submit w/o file -->
+                <div *ngIf="fileRequiredError" class="text-red-600 text-sm mt-1">
+                  An image file is required.
+                </div>
               </label>
 
               <!-- Message (full width) -->

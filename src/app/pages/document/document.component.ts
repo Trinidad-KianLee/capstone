@@ -27,7 +27,7 @@ export class DocumentComponent implements OnInit {
     this.errorMsg = null;
     this.postService.getPosts().subscribe({
       next: (data) => {
-        this.posts = data.items || data; // PocketBase typically returns { items, ... }
+        this.posts = data.items || data;
         console.log('Fetched docs:', this.posts);
       },
       error: (err) => {
@@ -52,21 +52,14 @@ export class DocumentComponent implements OnInit {
   }
 
   /**
-   * If the record has an `attachment` file, build the PocketBase file URL.
-   * Example: http://localhost:8090/api/files/document/<recordId>/<fileName>
+   * Build a file URL if there's an attachment field
    */
   getAttachmentUrl(post: any): string {
-    if (!post.attachment) {
-      return '';
-    }
-    // Adjust the URL pattern if needed
+    if (!post.attachment) return '';
+    // Adjust the URL to match your PocketBase settings
     return `http://localhost:8090/api/files/document/${post.id}/${post.attachment}`;
   }
 
-  /**
-   * Called when user clicks the thumbnail image.
-   * Opens the modal with a full-screen version.
-   */
   openModal(post: any) {
     const url = this.getAttachmentUrl(post);
     if (url) {
@@ -75,9 +68,6 @@ export class DocumentComponent implements OnInit {
     }
   }
 
-  /**
-   * Close the modal
-   */
   closeModal() {
     this.showModal = false;
     this.selectedImageUrl = '';

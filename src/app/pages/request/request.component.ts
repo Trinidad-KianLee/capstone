@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PostService } from '../../services/post/post.service'; // Adjust path as needed
+import { PostService } from '../../services/post/post.service';
 
 @Component({
   selector: 'app-request',
@@ -9,7 +9,7 @@ import { PostService } from '../../services/post/post.service'; // Adjust path a
   styleUrls: ['./request.component.css'],
   standalone: true,
   imports: [
-    CommonModule, // For *ngIf, *ngFor, [ngClass], etc.
+    CommonModule, // For *ngIf, *ngFor, etc.
     FormsModule,  // For [(ngModel)]
   ],
 })
@@ -17,7 +17,7 @@ export class RequestComponent {
   step = 1;
   selectedPlaceholder = '';
 
-  // The placeholders for Step 1
+  // Step 1 placeholders
   placeholders: string[] = [
     'Contracts',
     'Demand Letters',
@@ -26,7 +26,7 @@ export class RequestComponent {
     'Others'
   ];
 
-  // Example sub-lists for step 2
+  // Example sub-lists for Step 2
   subContracts: string[] = [
     '1.1 Contracts with vendors',
     '1.2 Contracts with third party repair',
@@ -47,17 +47,17 @@ export class RequestComponent {
     '4.8 AMLC'
   ];
 
-  // Form fields for Step 2
+  // Additional fields for Step 2
   purpose = '';
   message = '';
 
-  // For file upload
+  // File upload
   selectedFile?: File;
+  fileRequiredError = false; // If user tries to submit w/o file
 
-  // Inject PostService
   constructor(private postService: PostService) {}
 
-  // Step navigation
+  // Navigation
   goNext() {
     this.step = 2;
   }
@@ -65,28 +65,32 @@ export class RequestComponent {
     this.step = 1;
   }
 
-  // Step 1: Select which placeholder was clicked
   selectPlaceholder(event: Event, placeholder: string) {
     event.preventDefault();
     this.selectedPlaceholder = placeholder;
   }
 
-  // Capture the selected file from the input
+  // Capture file selection
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) {
-      return;
+      this.selectedFile = undefined;
+    } else {
+      this.selectedFile = input.files[0];
     }
-    this.selectedFile = input.files[0];
-    console.log('Selected file:', this.selectedFile);
+    this.fileRequiredError = false; // Clear error if user picks a file
   }
 
-  // Called when user clicks "Submit" in Step 2
+  // Called on "Submit"
   submitRequest() {
-    // 1) Create a FormData object for multipart/form-data
-    const formData = new FormData();
+    // 1) If no file, show error and stop
+    if (!this.selectedFile) {
+      this.fileRequiredError = true;
+      return;
+    }
 
-    // 2) Append text fields
+    // 2) Build FormData
+    const formData = new FormData();
     formData.append('document', this.selectedPlaceholder || 'N/A');
     formData.append('type', 'Request');
     formData.append('status', 'Pending');
@@ -96,21 +100,18 @@ export class RequestComponent {
     formData.append('purpose', this.purpose);
     formData.append('message', this.message);
 
-    // 3) If a file was selected, append it to the "attachment" field
-    //    (Make sure your PocketBase collection has a "file" field named "attachment" or similar)
-    if (this.selectedFile) {
-      formData.append('attachment', this.selectedFile);
-    }
+    // Must have a file
+    formData.append('attachment', this.selectedFile);
 
-    // 4) Send to PocketBase
+    // 3) Submit to PocketBase
     this.postService.createPost(formData).subscribe({
       next: (res) => {
         console.log('Created new document:', res);
-        // Optionally reset form or show success
+        // Optionally reset form or navigate
       },
       error: (err) => {
         console.error('Error creating document:', err);
-      }
+      },
     });
   }
 }

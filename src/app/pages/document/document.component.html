@@ -7,7 +7,7 @@
       {{ errorMsg }}
     </div>
 
-    <!-- Table of documents -->
+    <!-- Table only if no error -->
     <table class="w-full border-collapse" *ngIf="!errorMsg">
       <thead>
         <tr class="border-b">
@@ -37,7 +37,7 @@
           </td>
           <td class="py-3">{{ post.feedback }}</td>
 
-          <!-- Show a small thumbnail if there's an attachment -->
+          <!-- Thumbnail if there's an attachment -->
           <td class="py-3">
             <div *ngIf="post.attachment; else noImage">
               <img
@@ -75,21 +75,32 @@
   </div>
 
   <div class="w-96 flex flex-col gap-6">
-    <!-- Side panel or filters here -->
+    <!-- You can put filters, side panel, etc. here -->
   </div>
 </div>
 
-<!-- MODAL for full-screen image -->
+<!-- MODAL for full-screen image with translucent overlay -->
+<!-- 
+  "bg-black bg-opacity-50" => 50% black. 
+  "bg-black/40" => 40% black. 
+  Tweak as you like to see the background more clearly.
+-->
 <div
-  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+  class="fixed inset-0 flex items-center justify-center bg-black/40"
   *ngIf="showModal"
 >
+  <!-- 
+    The container for the image:
+    - "max-w-4xl max-h-[90%]" to limit size
+    - "bg-white p-4 rounded relative" for styling
+  -->
   <div class="bg-white p-4 rounded relative max-w-4xl max-h-[90%]">
     <img
       [src]="selectedImageUrl"
       alt="Full image"
       class="max-h-[80vh] max-w-full object-contain"
     />
+    <!-- Close button -->
     <button
       class="absolute top-2 right-2 text-black bg-gray-200 rounded px-2 py-1 hover:bg-gray-300"
       (click)="closeModal()"
