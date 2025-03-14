@@ -9,7 +9,6 @@
         <!-- Title + Dynamic Subheading -->
         <h1 class="text-3xl font-semibold mb-2">REQUEST A CONTRACT NOW</h1>
         <p class="text-gray-600 leading-relaxed">
-          <!-- Show different subheading depending on step -->
           <ng-container *ngIf="step === 1">
             Please select the type of contract you are requesting
           </ng-container>
@@ -92,15 +91,18 @@
                   type="text"
                   class="input input-bordered w-full mt-1"
                   placeholder="Purpose of the Contract"
+                  [(ngModel)]="purpose"
                 />
               </label>
 
-              <!-- Upload Documents -->
+              <!-- Upload Documents (File) -->
               <label class="block">
                 <span class="text-gray-700">Upload Documents</span>
+                <!-- Key: (change)="onFileSelected($event)" -->
                 <input
                   type="file"
                   class="file-input file-input-bordered w-full mt-1"
+                  (change)="onFileSelected($event)"
                 />
               </label>
 
@@ -111,6 +113,7 @@
                   type="text"
                   class="input input-bordered w-full mt-1"
                   placeholder="Message for additional information"
+                  [(ngModel)]="message"
                 />
               </label>
 
@@ -134,6 +137,7 @@
               </button>
               <button
                 class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                (click)="submitRequest()"
               >
                 Submit
               </button>
