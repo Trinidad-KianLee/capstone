@@ -1,25 +1,20 @@
 <div class="flex min-h-screen bg-white">
-  <!-- MAIN CONTENT -->
   <div class="flex-grow p-12">
-    <!-- The card: fixed min-height, flex layout, step indicators at bottom -->
     <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg min-h-[700px] flex flex-col justify-between">
       
-      <!-- TOP SECTION: Title, Subheading, Step-Specific Content -->
       <div>
-        <!-- Title + Dynamic Subheading -->
         <h1 class="text-3xl font-semibold mb-2">REQUEST A CONTRACT NOW</h1>
         <p class="text-gray-600 leading-relaxed">
           <ng-container *ngIf="step === 1">
             Please select the type of contract you are requesting
           </ng-container>
           <ng-container *ngIf="step === 2">
-            You’re almost done! Please upload required documents.
+            You’re almost done! Please upload required documents (image only).
           </ng-container>
         </p>
 
-        <!-- STEP 1 CONTENT -->
+        <!-- STEP 1 -->
         <div *ngIf="step === 1; else step2Content" class="mt-8">
-          <!-- 2-column Grid of Buttons -->
           <div class="grid grid-cols-2 gap-8">
             <a
               *ngFor="let placeholder of placeholders"
@@ -35,7 +30,6 @@
             </a>
           </div>
 
-          <!-- Next Button -->
           <button
             class="px-4 py-2 mt-8 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
             (click)="goNext()"
@@ -45,7 +39,7 @@
           </button>
         </div>
 
-        <!-- STEP 2 CONTENT -->
+        <!-- STEP 2 -->
         <ng-template #step2Content>
           <div class="mt-8">
             <h2 class="font-semibold text-lg mb-2">Contract Information Form</h2>
@@ -66,12 +60,7 @@
                     {{ sub }}
                   </option>
                 </select>
-
-                <!-- Red error if subTypeError is true -->
-                <div
-                  *ngIf="subTypeError"
-                  class="text-red-600 text-sm mt-1"
-                >
+                <div *ngIf="subTypeError" class="text-red-600 text-sm mt-1">
                   Please select a sub-type.
                 </div>
               </label>
@@ -91,12 +80,7 @@
                       {{ reg }}
                     </option>
                   </select>
-
-                  <!-- Red error if subTypeError is true -->
-                  <div
-                    *ngIf="subTypeError"
-                    class="text-red-600 text-sm mt-1"
-                  >
+                  <div *ngIf="subTypeError" class="text-red-600 text-sm mt-1">
                     Please select a sub-type.
                   </div>
                 </label>
@@ -112,49 +96,30 @@
 
             <!-- Form Fields -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <!-- Purpose -->
+              <!-- (Optional) remove if you truly want only an image -->
               <label class="block">
-                <span class="text-gray-700">Purpose</span>
+                <span class="text-gray-700">Message (optional)</span>
                 <input
                   type="text"
                   class="input input-bordered w-full mt-1"
-                  placeholder="Purpose of the Contract"
-                  [(ngModel)]="purpose"
-                />
-              </label>
-
-              <!-- Upload Documents (Required) -->
-              <label class="block">
-                <span class="text-gray-700">Upload Documents (required)</span>
-                <input
-                  type="file"
-                  class="file-input file-input-bordered w-full mt-1"
-                  (change)="onFileSelected($event)"
-                />
-                <!-- Show error if user tries to submit w/o file -->
-                <div *ngIf="fileRequiredError" class="text-red-600 text-sm mt-1">
-                  An image file is required.
-                </div>
-              </label>
-
-              <!-- Message (full width) -->
-              <label class="block sm:col-span-2">
-                <span class="text-gray-700">Message</span>
-                <input
-                  type="text"
-                  class="input input-bordered w-full mt-1"
-                  placeholder="Message for additional information"
+                  placeholder="Any note or message"
                   [(ngModel)]="message"
                 />
               </label>
 
-              <!-- Terms & Conditions -->
-              <label class="flex items-center sm:col-span-2">
-                <input type="checkbox" class="checkbox mr-2" />
-                <span>
-                  I accept the
-                  <a href="#" class="underline text-blue-600">terms and T&amp;Cs</a>
-                </span>
+              <!-- Upload Documents (Images only) -->
+              <label class="block">
+                <span class="text-gray-700">Upload Document (image only)</span>
+                <!-- accept="image/*" ensures user can only select images -->
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="file-input file-input-bordered w-full mt-1"
+                  (change)="onFileSelected($event)"
+                />
+                <div *ngIf="fileRequiredError" class="text-red-600 text-sm mt-1">
+                  An image file is required.
+                </div>
               </label>
             </div>
 
@@ -185,7 +150,7 @@
         </ng-template>
       </div>
       
-      <!-- BOTTOM SECTION: Step Indicators (always at bottom of the card) -->
+      <!-- Step Indicators -->
       <div>
         <div class="flex justify-center items-center space-x-6 mt-6">
           <!-- Step 1 -->
@@ -230,7 +195,7 @@
     </div>
   </div>
 
-  <!-- RIGHT SIDEBAR -->
+  <!-- RIGHT SIDEBAR (remove if you want no sidebar) -->
   <aside class="w-80 bg-gray-50 border-l p-8">
     <div class="flex flex-col items-center">
       <img
@@ -242,7 +207,6 @@
       <p class="text-neutral">Business Department</p>
       <button class="btn btn-outline w-full mt-4">⚙️ Account Settings</button>
     </div>
-
     <div class="mt-8">
       <h3 class="text-lg font-semibold mb-2">Notifications</h3>
       <ul class="space-y-2 text-neutral">

@@ -8,16 +8,13 @@ import { PostService } from '../../services/post/post.service';
   templateUrl: './request.component.html',
   styleUrls: ['./request.component.css'],
   standalone: true,
-  imports: [
-    CommonModule, // For *ngIf, *ngFor, etc.
-    FormsModule,  // For [(ngModel)]
-  ],
+  imports: [CommonModule, FormsModule],
 })
 export class RequestComponent {
   step = 1;
   selectedPlaceholder = '';
 
-  // Step 1 placeholders
+  // Removed other placeholders if you want. Keep if needed
   placeholders: string[] = [
     'Contracts',
     'Demand Letters',
@@ -26,7 +23,7 @@ export class RequestComponent {
     'Others'
   ];
 
-  // Example sub-lists for Step 2
+  // If you still want sub-contract logic, keep these arrays:
   subContracts: string[] = [
     '1.1 Contracts with vendors',
     '1.2 Contracts with third party repair',
@@ -47,28 +44,28 @@ export class RequestComponent {
     '4.8 AMLC'
   ];
 
-  // Additional fields for Step 2
-  purpose = '';
+  // 'message' is still here if you want to store text. 
+  // If you truly want only an image, you can remove 'message' and the text field
   message = '';
 
-  // File upload
   selectedFile?: File;
-  fileRequiredError = false; // If user tries to submit w/o file
+  fileRequiredError = false;
 
   // Sub-type
   selectedSubType: string = '';
-  subTypeError = false; // Show a red error message if sub-type is required but not chosen
+  subTypeError = false;
 
   // For success notification
   submitSuccess = false;
 
   constructor(private postService: PostService) {}
 
-  // Navigation
+  // Step nav
   goNext() {
     if (!this.selectedPlaceholder) return;
     this.step = 2;
   }
+
   goBack() {
     this.step = 1;
   }
@@ -78,7 +75,7 @@ export class RequestComponent {
     this.selectedPlaceholder = placeholder;
   }
 
-  // Capture file selection
+  // Only accept images
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) {
@@ -89,15 +86,14 @@ export class RequestComponent {
     this.fileRequiredError = false;
   }
 
-  // Called on "Submit"
   submitRequest() {
-    // 1) If no file, show error and stop
+    // Must have a file
     if (!this.selectedFile) {
       this.fileRequiredError = true;
       return;
     }
 
-    // 2) If user selected "Contracts" or "Regulatory Compliance", sub-type is required
+    // If user selected "Contracts" or "Regulatory Compliance", sub-type is required
     if (
       (this.selectedPlaceholder === 'Contracts' ||
         this.selectedPlaceholder === 'Regulatory Compliance') &&
@@ -108,7 +104,7 @@ export class RequestComponent {
     }
     this.subTypeError = false;
 
-    // 3) Build FormData
+    // Build FormData
     const formData = new FormData();
     formData.append('document', this.selectedPlaceholder || 'N/A');
     formData.append('type', 'Request');
@@ -116,16 +112,14 @@ export class RequestComponent {
     formData.append('submission_date', new Date().toISOString());
     formData.append('feedback', '');
     formData.append('action', 'Delete');
-    formData.append('purpose', this.purpose);
-    formData.append('message', this.message);
-
-    // 4) Add sub_type
+    // If you want to store text:
+    formData.append('message', this.message || '');
     formData.append('sub_type', this.selectedSubType || '');
-
-    // Must have a file
+    
+    // Only image
     formData.append('attachment', this.selectedFile);
 
-    // 5) Submit to PocketBase
+    // Send to PocketBase
     this.postService.createPost(formData).subscribe({
       next: (res) => {
         console.log('Created new document:', res);

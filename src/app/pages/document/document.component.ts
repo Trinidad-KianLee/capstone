@@ -13,9 +13,13 @@ export class DocumentComponent implements OnInit {
   posts: any[] = [];
   errorMsg: string | null = null;
 
-  // For the modal
+  // For the image modal
   showModal = false;
   selectedImageUrl = '';
+
+  // For the message modal
+  showMessageModal = false;
+  selectedMessage = '';
 
   constructor(private postService: PostService) {}
 
@@ -27,7 +31,6 @@ export class DocumentComponent implements OnInit {
     this.errorMsg = null;
     this.postService.getPosts().subscribe({
       next: (data) => {
-        // Typically, PocketBase returns { items: [...], ... }
         this.posts = data.items || data;
         console.log('Fetched docs:', this.posts);
       },
@@ -52,12 +55,8 @@ export class DocumentComponent implements OnInit {
     });
   }
 
-  /**
-   * Build a file URL if there's an attachment field
-   */
   getAttachmentUrl(post: any): string {
     if (!post.attachment) return '';
-    // Adjust the URL to match your PocketBase settings
     return `http://localhost:8090/api/files/document/${post.id}/${post.attachment}`;
   }
 
@@ -72,5 +71,17 @@ export class DocumentComponent implements OnInit {
   closeModal() {
     this.showModal = false;
     this.selectedImageUrl = '';
+  }
+
+  // Called when user clicks "See Message"
+  onSeeMessage(post: any) {
+    // If there's no message, show a fallback
+    this.selectedMessage = post.message || '(No message provided)';
+    this.showMessageModal = true;
+  }
+
+  closeMessageModal() {
+    this.showMessageModal = false;
+    this.selectedMessage = '';
   }
 }

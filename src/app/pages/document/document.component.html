@@ -15,9 +15,11 @@
           <th class="text-left py-2">Type</th>
           <th class="text-left py-2">Status</th>
           <th class="text-left py-2">Submission Date</th>
-          <th class="text-left py-2">Feedback</th>
           <th class="text-left py-2">Sub Type</th>
           <th class="text-left py-2">Attachment</th>
+
+          <!-- Move "Message" column before "Action" -->
+          <th class="text-left py-2">Message</th>
           <th class="text-left py-2">Action</th>
         </tr>
       </thead>
@@ -36,14 +38,9 @@
           <td class="py-3">
             {{ post.submission_date | date: 'mediumDate' }}
           </td>
-          <td class="py-3">{{ post.feedback }}</td>
-
-          <!-- Show subType if present -->
           <td class="py-3">
             {{ post.sub_type || 'N/A' }}
           </td>
-
-          <!-- Thumbnail if there's an attachment -->
           <td class="py-3">
             <div *ngIf="post.attachment; else noImage">
               <img
@@ -58,6 +55,17 @@
             </ng-template>
           </td>
 
+          <!-- "Message" column -->
+          <td class="py-3">
+            <button
+              class="text-blue-500 hover:underline"
+              (click)="onSeeMessage(post)"
+            >
+              See Message
+            </button>
+          </td>
+
+          <!-- "Action" (Delete) column -->
           <td class="py-3">
             <button
               (click)="delete(post.id)"
@@ -79,10 +87,6 @@
       </button>
     </div>
   </div>
-
-  <div class="w-96 flex flex-col gap-6">
-    <!-- You can put filters, side panel, etc. here -->
-  </div>
 </div>
 
 <!-- MODAL for full-screen image with translucent overlay -->
@@ -101,6 +105,25 @@
       (click)="closeModal()"
     >
       ✕
+    </button>
+  </div>
+</div>
+
+<!-- MODAL for the message -->
+<div
+  class="fixed inset-0 flex items-center justify-center bg-black/40"
+  *ngIf="showMessageModal"
+>
+  <div class="bg-white p-6 rounded relative max-w-lg">
+    <h2 class="text-xl font-semibold mb-2">User's Message</h2>
+    <p class="text-gray-700 mb-4">
+      {{ selectedMessage }}
+    </p>
+    <button
+      class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      (click)="closeMessageModal()"
+    >
+      Close
     </button>
   </div>
 </div>
