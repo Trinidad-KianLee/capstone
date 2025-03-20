@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../services/auth/auth.service';
 import { CommonModule } from '@angular/common';
+import PocketBase from 'pocketbase';
 
 @Component({
   selector: 'app-login',
@@ -14,35 +15,48 @@ export class LoginComponent {
   email: string = '';
   password: string = '';
   errorMessage: string = '';
+  successMessage: string = '';
+  isLoading = false; // Spinner state
 
-  // Added for loading spinner
-  isLoading = false;
+  pb = new PocketBase('http://127.0.0.1:8090'); // Change to your PocketBase URL
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private router: Router) {}
 
-  async onLogin() {
-    // Reset any previous error
+  // Login Function
+  async onLogin(form: NgForm) {
+    if (form.invalid) return;
+
     this.errorMessage = '';
-    // Show loading modal
+    this.successMessage = '';
     this.isLoading = true;
 
-    // Artificially delay for 1.5s to display the spinner,
-    // then perform your real login logic
     setTimeout(async () => {
       try {
-        await this.authService.login(this.email, this.password);
-        // If successful, navigate
-        this.router.navigate(['/dashboard']);
+        await this.pb.collection('users').authWithPassword(this.email, this.password);
+        this.router.navigate(['/dashboard']); // Redirect on success
       } catch (error) {
-        // If login fails, show error
         this.errorMessage = 'Invalid Credentials!';
       } finally {
-        // Hide spinner
         this.isLoading = false;
       }
     }, 1500);
+  }
+
+  // Forgot Password Function
+  async sendResetEmail() {
+    this.successMessage = '';
+    this.errorMessage = '';
+
+    if (!this.email) {
+      this.errorMessage = 'Please enter your email first!';
+      return;
+    }
+
+    try {
+      await this.pb.collection('users').requestPasswordReset(this.email);
+      this.successMessage = 'Password reset email sent!';
+    } catch (error) {
+      this.errorMessage = 'Failed to send reset email. Check if email exists!';
+    }
   }
 }
