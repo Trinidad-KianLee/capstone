@@ -1,28 +1,81 @@
 <div class="h-screen flex items-center justify-center bg-gray-100">
-    <div class="flex w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
-        <div class="w-1/2 bg-blue-600 p-10 flex flex-col justify-center text-white">
-            <h1 class="text-4xl font-bold leading-tight">Exceed Expectations, Every Time.</h1>
-            <p class="mt-4">Dedicated to your Success</p>
+  <div class="flex w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
+    <!-- Left Section -->
+    <div class="w-1/2 bg-blue-600 p-10 flex flex-col justify-center text-white">
+      <h1 class="text-4xl font-bold leading-tight">Exceed Expectations, Every Time.</h1>
+      <p class="mt-4">Dedicated to your Success</p>
+    </div>
+    
+    <!-- Right Section (Login Form) -->
+    <div class="w-1/2 p-10 flex flex-col justify-center">
+      <h2 class="text-2xl font-bold">Log In to Sentinel</h2>
+      <p class="text-gray-500 text-sm mb-6">Enter your credentials to continue.</p>
+
+      <!-- Error Message (Above Form) -->
+      <div *ngIf="errorMessage" class="mb-4 bg-red-100 text-red-800 border border-red-300 px-4 py-3 rounded">
+        {{ errorMessage }}
+      </div>
+      
+      <!-- Success Message (Above Form) -->
+      <div *ngIf="successMessage" class="mb-4 bg-green-100 text-green-800 border border-green-300 px-4 py-3 rounded">
+        {{ successMessage }}
+      </div>
+
+      <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm); $event.preventDefault()">
+        <!-- EMAIL INPUT -->
+        <label class="block text-gray-700 mt-2">EMAIL</label>
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="email"
+          placeholder=""
+          required
+          email
+          #emailCtrl="ngModel"
+          (blur)="0"
+          class="w-full p-3 border rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+        <div class="text-red-500 text-sm mt-1 mb-2">
+          <ng-container *ngIf="emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)">
+            <div *ngIf="emailCtrl.errors?.['required']">Email is required</div>
+            <div *ngIf="emailCtrl.errors?.['email']">Please enter a valid email</div>
+          </ng-container>
         </div>
         
-        <div class="w-1/2 p-10 flex flex-col justify-center">
-            <h2 class="text-2xl font-bold">Log In to Sentinel</h2>
-            <p class="text-gray-500 text-sm mb-6">Enter your credentials to continue.</p>
-            
-
-            <form (submit)="onLogin(); $event.preventDefault()">
-                <label class="block text-gray-700">EMAIL</label>
-                <input type="email" name="email" [(ngModel)]="email"  placeholder="johndoe@email.com" class="w-full p-3 border rounded-lg mt-1 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 ">
-                
-                <label class="block text-gray-700">PASSWORD</label>
-                <input type="password" name="password" [(ngModel)]="password"  placeholder="••••••••••••" class="w-full p-3 border rounded-lg mt-1 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                
-                <button class="w-full bg-blue-600 text-white p-3 rounded-lg flex items-center justify-center hover:bg-blue-700">
-                    CONTINUE →
-                </button>
-                
-                <p class="text-gray-500 text-sm text-right mt-4 italic">Forgot your password?</p>
-            </form>
+        <!-- PASSWORD INPUT -->
+        <label class="block text-gray-700 mt-2">PASSWORD</label>
+        <input
+          type="password"
+          name="password"
+          [(ngModel)]="password"
+          placeholder=""
+          required
+          #passCtrl="ngModel"
+          (blur)="0"
+          class="w-full p-3 border rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+        <div class="text-red-500 text-sm mt-1 mb-2">
+          <ng-container *ngIf="passCtrl.invalid && (passCtrl.dirty || passCtrl.touched)">
+            <div *ngIf="passCtrl.errors?.['required']">Password is required</div>
+          </ng-container>
         </div>
+        
+        <!-- LOGIN BUTTON -->
+        <button
+          class="w-full bg-blue-600 text-white p-3 mt-4 rounded-lg flex items-center justify-center hover:bg-blue-700"
+          [disabled]="isLoading || loginForm.invalid"
+        >
+          <span *ngIf="!isLoading">CONTINUE →</span>
+          <span *ngIf="isLoading" class="loading loading-spinner border-white inline-block w-6 h-6"></span>
+        </button>
+        
+        <!-- Forgot Password -->
+        <p class="text-gray-500 text-sm text-right mt-4 italic">
+          <a (click)="sendResetEmail()" class="text-blue-600 hover:underline cursor-pointer">
+            Forgot your password?
+          </a>
+        </p>
+      </form>
     </div>
+  </div>
 </div>

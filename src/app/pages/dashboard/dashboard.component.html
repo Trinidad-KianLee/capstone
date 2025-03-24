@@ -1,59 +1,284 @@
 <div class="flex">
-    <div class="grow p-8 pr-0">
-        <header class="flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-semibold">Good morning</h1>
-                <p class="text-neutral">Let's be productive today!</p>
-            </div>
-            <button class="btn btn-primary">+ Request</button>
-        </header>
-    
-        <section class="mt-6">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="text-left  text-neutral">
-                            <th class="p-3">Activities</th>
-                            <th class="p-3">Type</th>
-                            <th class="p-3">Status</th>
-                            <th class="p-3">Submission Date</th>
-                            <th class="p-3">Feedback</th>
-                            <th class="p-3">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="p-3">Contract</td>
-                            <td class="p-3">Contract</td>
-                            <td class="p-3"><span class="badge badge-warning">Pending Review</span></td>
-                            <td class="p-3">12/12/24</td>
-                            <td class="p-3">Needs revision</td>
-                            <td class="p-3"><button class="btn btn-outline btn-sm">✏️ Edit</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="mt-4 flex justify-between">
-                    <input type="text" placeholder="Search activities" class="input input-bordered w-64" />
-                    <button class="btn btn-primary">See all history</button>
-                </div>
-            </div>
-        </section>
+    <!-- MAIN CONTENT -->
+    <div class="grow p-8">
+      <!-- Header -->
+      <header class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-semibold">Good morning, {{ firstName }}!</h1>
+          <p class="text-neutral">Let's be productive today!</p>
+        </div>
+        <button class="btn btn-primary" (click)="navigateToRequest()">+ Request</button>
+      </header>
+  
+      <!-- ACTIVITY TABLE -->
+      <section class="mt-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-xl font-semibold mb-4">Activity</h2>
+  
+          <table class="table-auto w-full" *ngIf="documents.length > 0">
+            <thead>
+              <tr class="border-b">
+                <th class="p-3 text-left">Activities</th>
+                <th class="p-3 text-left">Type</th>
+                <th class="p-3 text-left">Status</th>
+                <th class="p-3 text-left">Submission Date</th>
+                <th class="p-3 text-left">Feedback</th>
+                <th class="p-3 text-left">Attachment</th>
+                <th class="p-3 text-left">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of documents" class="border-b hover:bg-gray-100">
+                <td class="p-3">{{ doc.document }}</td>
+                <td class="p-3">{{ doc.type }}</td>
+                <td class="p-3">{{ doc.status }}</td>
+                <td class="p-3">{{ doc.submission_date | date: 'mediumDate' }}</td>
+                <td class="p-3">{{ doc.feedback || 'N/A' }}</td>
+  
+                <!-- Thumbnail (click to open full-size) -->
+                <td class="p-3">
+                  <div *ngIf="doc.attachment; else noImage">
+                    <img
+                      [src]="getAttachmentUrl(doc)"
+                      alt="thumbnail"
+                      class="h-12 w-auto cursor-pointer border"
+                      (click)="openModal(doc)"
+                    />
+                  </div>
+                  <ng-template #noImage>
+                    <span class="text-gray-400">No image</span>
+                  </ng-template>
+                </td>
+  
+                <!-- Edit / Delete -->
+                <td class="p-3 whitespace-nowrap">
+                  <button
+                    class="text-blue-500 hover:text-blue-700 mr-2"
+                    (click)="editDocument(doc)"
+                  >
+                    Edit
+                  </button>
+                  <!-- Instead of directly deleting, open the confirmation modal -->
+                  <button
+                    class="text-red-500 hover:text-red-700"
+                    (click)="confirmDeleteDocument(doc)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+  
+          <!-- If no documents -->
+          <div *ngIf="documents.length === 0" class="text-gray-500">
+            No documents found.
+          </div>
+        </div>
+      </section>
     </div>
-    <div class="">
-        <aside class="w-80  p-6 rounded-tr-3xl">
-            <div class="flex flex-col items-center">
-                <img src="https://via.placeholder.com/80" alt="Profile" class="rounded-full w-20 h-20">
-                <h2 class="mt-2 text-lg font-semibold">John Doe</h2>
-                <p class="text-neutral">Business Department</p>
-                <button class="btn btn-outline w-full mt-4">⚙️ Account Settings</button>
-            </div>
-            <div class="mt-6">
-                <h3 class="text-lg font-semibold">Notifications</h3>
-                <ul class="mt-2 space-y-2">
-                    <li class="flex items-center text-neutral">✅ Contract approved by CEO <span class="ml-2">1 hr ago</span></li>
-                    <li class="flex items-center text-neutral">✅ New task assigned <span class="ml-2">2 hrs ago</span></li>
-                </ul>
-            </div>
-        </aside>
+  
+    <!-- PROFILE ASIDE -->
+    <div>
+      <aside class="w-80 p-6 rounded-tr-3xl">
+        <div class="flex flex-col items-center">
+          <img
+            src="https://via.placeholder.com/80"
+            alt="Profile"
+            class="rounded-full w-20 h-20"
+          />
+          <h2 class="mt-2 text-lg font-semibold">John Doe</h2>
+          <p class="text-neutral">Business Department</p>
+          <button class="btn btn-outline w-full mt-4">⚙️ Account Settings</button>
+        </div>
+        <div class="mt-6">
+          <h3 class="text-lg font-semibold">Notifications</h3>
+          <ul class="mt-2 space-y-2">
+            <li class="flex items-center text-neutral">
+              ✅ Contract approved by CEO <span class="ml-2">1 hr ago</span>
+            </li>
+            <li class="flex items-center text-neutral">
+              ✅ New task assigned <span class="ml-2">2 hrs ago</span>
+            </li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+  
+  <!-- Full-size image modal -->
+  <div
+    class="fixed inset-0 flex items-center justify-center bg-black/40"
+    *ngIf="showModal"
+  >
+    <div class="bg-white p-4 rounded relative max-w-4xl max-h-[90%]">
+      <img
+        [src]="selectedImageUrl"
+        alt="Full image"
+        class="max-h-[80vh] max-w-full object-contain"
+      />
+      <button
+        class="absolute top-2 right-2 text-black bg-gray-200 rounded px-2 py-1 hover:bg-gray-300"
+        (click)="closeModal()"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+  
+  <!-- EDIT DOCUMENT MODAL (unchanged) -->
+  <div
+    class="fixed inset-0 flex items-center justify-center bg-black/40"
+    *ngIf="showEditModal"
+  >
+    <div class="bg-white p-6 rounded relative max-w-lg w-full mx-4">
+      <h2 class="text-xl font-semibold mb-4">Edit Document</h2>
+      <div class="space-y-3">
+        <!-- Activities (read-only) -->
+        <div>
+          <label class="block text-sm font-medium">Activities</label>
+          <input
+            type="text"
+            class="border rounded w-full p-2 bg-gray-100 cursor-not-allowed"
+            [(ngModel)]="editingDoc.document"
+            [disabled]="true"
+          />
+        </div>
+  
+        <!-- Type (read-only) -->
+        <div>
+          <label class="block text-sm font-medium">Type</label>
+          <input
+            type="text"
+            class="border rounded w-full p-2 bg-gray-100 cursor-not-allowed"
+            [(ngModel)]="editingDoc.type"
+            [disabled]="true"
+          />
+        </div>
+  
+        <!-- Status (read-only) -->
+        <div>
+          <label class="block text-sm font-medium">Status</label>
+          <input
+            type="text"
+            class="border rounded w-full p-2 bg-gray-100 cursor-not-allowed"
+            [(ngModel)]="editingDoc.status"
+            [disabled]="true"
+          />
+        </div>
+  
+        <!-- Submission Date (read-only) -->
+        <div>
+          <label class="block text-sm font-medium">Submission Date</label>
+          <input
+            type="date"
+            class="border rounded w-full p-2 bg-gray-100 cursor-not-allowed"
+            [(ngModel)]="editingDoc.submission_date"
+            [disabled]="true"
+          />
+        </div>
+  
+        <!-- Feedback (read-only) -->
+        <div>
+          <label class="block text-sm font-medium">Feedback</label>
+          <input
+            type="text"
+            class="border rounded w-full p-2 bg-gray-100 cursor-not-allowed"
+            [(ngModel)]="editingDoc.feedback"
+            [disabled]="true"
+          />
+        </div>
+  
+        <!-- Current Attachment -->
+        <div class="mt-3">
+          <p class="text-sm font-medium">Current Attachment:</p>
+          <div *ngIf="editingDoc?.attachment; else noAttachment">
+            <img
+              [src]="getAttachmentUrl(editingDoc)"
+              alt="Current"
+              class="h-12 w-auto border mb-2"
+            />
+            <button
+              class="text-red-500 hover:text-red-700 text-sm"
+              (click)="removeAttachment()"
+            >
+              Remove Attachment
+            </button>
+          </div>
+          <ng-template #noAttachment>
+            <span class="text-gray-500 text-sm">No current attachment</span>
+          </ng-template>
+        </div>
+  
+        <!-- Replace/Upload new Attachment (images only) -->
+        <div class="mt-2">
+          <label class="block text-sm font-medium">New Attachment (optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onFileSelected($event)"
+            class="file-input file-input-bordered w-full max-w-xs"
+          />
+        </div>
       </div>
-</div>
+  
+      <!-- Buttons -->
+      <div class="mt-6 flex justify-end space-x-4">
+        <button
+          class="px-4 py-2 bg-gray-300 text-white rounded hover:bg-gray-400"
+          (click)="closeEditModal()"
+        >
+          Cancel
+        </button>
+        <button
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          (click)="saveEdit()"
+          [disabled]="!canSave()"
+        >
+          Save
+        </button>
+      </div>
+  
+      <!-- Close modal icon -->
+      <button
+        class="absolute top-2 right-2 text-black bg-gray-200 rounded px-2 py-1 hover:bg-gray-300"
+        (click)="closeEditModal()"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+  
+  <!-- NEW: DELETE CONFIRMATION MODAL -->
+  <div
+    class="fixed inset-0 flex items-center justify-center bg-black/40"
+    *ngIf="showDeleteModal"
+  >
+    <div class="bg-white p-6 rounded relative max-w-sm w-full mx-4">
+      <h2 class="text-xl font-semibold mb-4">Confirm Deletion</h2>
+      <p class="text-gray-700 mb-6">
+        Are you sure you want to delete the document "{{ docToDelete?.document }}"?
+      </p>
+      <div class="flex justify-end space-x-4">
+        <button
+          class="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+          (click)="cancelDelete()"
+        >
+          No
+        </button>
+        <button
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          (click)="confirmDelete()"
+        >
+          Yes, Delete
+        </button>
+      </div>
+      <button
+        class="absolute top-2 right-2 text-black bg-gray-200 rounded px-2 py-1 hover:bg-gray-300"
+        (click)="cancelDelete()"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+  

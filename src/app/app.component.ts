@@ -4,7 +4,8 @@ import { AuthService } from './services/auth/auth.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterModule],
+  standalone: true,
+  imports: [RouterOutlet, RouterModule], // ✅ Remove HttpClientModule
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
