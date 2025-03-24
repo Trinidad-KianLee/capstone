@@ -17,7 +17,6 @@
           <th class="text-left py-2">Submission Date</th>
           <th class="text-left py-2">Sub Type</th>
           <th class="text-left py-2">Attachment</th>
-
           <!-- Move "Message" column before "Action" -->
           <th class="text-left py-2">Message</th>
           <th class="text-left py-2">Action</th>
@@ -65,10 +64,10 @@
             </button>
           </td>
 
-          <!-- "Action" (Delete) column -->
+          <!-- "Action" column: replaced direct delete with "confirmDelete" -->
           <td class="py-3">
             <button
-              (click)="delete(post.id)"
+              (click)="confirmDelete(post)"
               class="text-blue-500 hover:text-blue-700 btn"
             >
               Delete
@@ -124,6 +123,39 @@
       (click)="closeMessageModal()"
     >
       Close
+    </button>
+  </div>
+</div>
+
+<!-- NEW: DELETE CONFIRMATION MODAL -->
+<div
+  class="fixed inset-0 flex items-center justify-center bg-black/40"
+  *ngIf="showDeleteModal"
+>
+  <div class="bg-white p-6 rounded relative max-w-sm w-full mx-4">
+    <h2 class="text-xl font-semibold mb-4">Confirm Deletion</h2>
+    <p class="text-gray-700 mb-6">
+      Are you sure you want to delete <strong>{{ postToDelete?.document }}</strong>?
+    </p>
+    <div class="flex justify-end space-x-4">
+      <button
+        class="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+        (click)="cancelDelete()"
+      >
+        Cancel
+      </button>
+      <button
+        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        (click)="confirmDeleteYes()"
+      >
+        Yes, Delete
+      </button>
+    </div>
+    <button
+      class="absolute top-2 right-2 text-black bg-gray-200 rounded px-2 py-1 hover:bg-gray-300"
+      (click)="cancelDelete()"
+    >
+      ✕
     </button>
   </div>
 </div>

@@ -21,6 +21,10 @@ export class DocumentComponent implements OnInit {
   showMessageModal = false;
   selectedMessage = '';
 
+  // NEW: Delete Confirmation
+  showDeleteModal = false;       // Controls delete modal visibility
+  postToDelete: any = null;      // The post to be deleted
+
   constructor(private postService: PostService) {}
 
   ngOnInit(): void {
@@ -41,6 +45,28 @@ export class DocumentComponent implements OnInit {
     });
   }
 
+  // Replaces the direct delete call in the template
+  confirmDelete(post: any) {
+    // Save the post we intend to delete and open the modal
+    this.postToDelete = post;
+    this.showDeleteModal = true;
+  }
+
+  // If user cancels the delete
+  cancelDelete() {
+    this.postToDelete = null;
+    this.showDeleteModal = false;
+  }
+
+  // If user confirms
+  confirmDeleteYes() {
+    if (!this.postToDelete) return;
+    this.delete(this.postToDelete.id);
+    this.postToDelete = null;
+    this.showDeleteModal = false;
+  }
+
+  // Your existing delete logic remains the same
   delete(id: string) {
     this.errorMsg = null;
     this.postService.deletePost(id).subscribe({
@@ -75,7 +101,6 @@ export class DocumentComponent implements OnInit {
 
   // Called when user clicks "See Message"
   onSeeMessage(post: any) {
-    // If there's no message, show a fallback
     this.selectedMessage = post.message || '(No message provided)';
     this.showMessageModal = true;
   }
