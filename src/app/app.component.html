@@ -1,7 +1,7 @@
 <div class="flex min-h-screen">
   <!-- LEFT SIDEBAR (BLUE) -->
-  @if(!without()){
-  <aside class="w-64 bg-blue-600 text-white p-6 space-y-6">
+  <!-- Only show the sidebar if 'without()' is false -->
+  <aside *ngIf="!without()" class="w-64 bg-blue-600 text-white p-6 space-y-6">
     <h1 class="text-xl font-bold">SENTINEL</h1>
     <nav class="space-y-4">
       <a routerLink="/dashboard" routerLinkActive="bg-white text-blue-600"
@@ -27,7 +27,6 @@
       </a>
     </div>
   </aside>
-  }
   
   <!-- MAIN CONTENT (White Background) -->
   <main class="w-full h-full">

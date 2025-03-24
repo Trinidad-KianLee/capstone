@@ -59,4 +59,9 @@ export class LoginComponent {
       this.errorMessage = 'Failed to send reset email. Check if email exists!';
     }
   }
+
+  goToCreateAccount() {
+    this.router.navigate(['/register-account']);
+  }
+
 }

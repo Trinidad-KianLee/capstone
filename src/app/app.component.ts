@@ -1,29 +1,29 @@
 import { Component } from '@angular/core';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { AuthService } from './services/auth/auth.service';
+import { CommonModule } from '@angular/common'; // <-- Import CommonModule
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterModule], // ✅ Remove HttpClientModule
+  // Add CommonModule here:
+  imports: [CommonModule, RouterOutlet, RouterModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
-  urlWithoutSideBar = ["/login", ""];
+
+  // The routes for which you do NOT want the sidebar
+  urlWithoutSideBar = ["/login", "/register-account", ""];
 
   without(): boolean {
-    console.log(this.router.url)
     return this.urlWithoutSideBar.includes(this.router.url);
   }
 
-
-  
-  logout(){
+  logout() {
     this.authService.logout();
     this.router.navigate(["/login"]);
   }
 }
-
