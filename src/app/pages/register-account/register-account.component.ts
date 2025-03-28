@@ -1,13 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, CreateUserResponse } from '../../services/auth/auth.service';
 
 function passwordMatchValidator(control: AbstractControl) {
   const password = control.get('password');
   const confirmPassword = control.get('confirmPassword');
-
   if (password && confirmPassword && password.value !== confirmPassword.value) {
     return { passwordMismatch: true };
   }
@@ -53,7 +58,6 @@ export class RegisterAccountComponent implements OnInit {
     }
 
     const { firstName, middleName, lastName, role, email, password, confirmPassword } = this.registerForm.value;
-
     const additionalData = {
       first_name: firstName,
       middle_name: middleName,
@@ -66,7 +70,7 @@ export class RegisterAccountComponent implements OnInit {
         email,
         password,
         confirmPassword,
-        additionalData
+        additionalData,
       );
       console.log('User registered successfully:', response);
       this.message = 'Registration successful! Your account is pending approval by our IT department.';

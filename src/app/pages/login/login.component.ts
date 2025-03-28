@@ -29,9 +29,21 @@ export class LoginComponent {
 
     setTimeout(async () => {
       try {
-        await this.pb.collection('users').authWithPassword(this.email, this.password);
-        const user = this.pb.authStore.model;
+        // Authenticate the user
+        const authData = await this.pb.collection('users').authWithPassword(this.email, this.password);
+        console.log('Authenticated user record:', authData.record);
+        
+        // Re-fetch the full user record so custom fields (like status) are included
+        const fullUserRecord = await this.pb.collection('users').getOne(authData.record.id);
+        console.log('Full user record:', fullUserRecord);
 
+        if (fullUserRecord && fullUserRecord['status'] !== 'approved') {
+          this.errorMessage = 'Your account is not approved yet.';
+          this.pb.authStore.clear(); 
+          return;
+        }
+
+        const user = this.pb.authStore.model;
         if (user && user['role'] === 'admin') {
           this.router.navigate(['/it-department']);
         } else {

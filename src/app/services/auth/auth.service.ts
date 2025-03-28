@@ -24,12 +24,16 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<any> {
     try {
+      // Authenticate the user using PocketBase auth endpoint
       const authData = await this.pb.collection(this.collection).authWithPassword(email, password);
+      console.log('Authenticated user record (from authWithPassword):', authData.record);
       
-      // Check if the user's account has been approved.
-      // The user record is available in authData.record.
-      if (authData?.record && authData.record['status'] !== 'approved') {
-        // If the account is not approved, log out immediately and throw an error.
+      // Re-fetch the full user record so custom fields (like status) are loaded
+      const fullUserRecord = await this.pb.collection(this.collection).getOne(authData.record.id);
+      console.log('Full user record:', fullUserRecord);
+      
+      // If the account is not approved, log out and throw an error
+      if (fullUserRecord && fullUserRecord['status'] !== 'approved') {
         this.logout();
         throw new Error('Your account is not approved yet.');
       }
@@ -50,7 +54,7 @@ export class AuthService {
     additionalData?: any
   ): Promise<CreateUserResponse> {
     try {
-      // Merge additional data with a default "pending" status.
+      // Merge additional data with a default status of 'pending'
       const data = { 
         email, 
         password, 
@@ -59,11 +63,11 @@ export class AuthService {
         status: 'pending' 
       };
 
-      // Create the user on PocketBase with status set to "pending"
+      // Create the user record with status set to "pending"
       const newUser = await this.pb.collection(this.collection).create(data);
       console.log('User registration successful:', newUser);
 
-      // Do not auto-login the user when registration is pending.
+      // Do not auto-login; simply return the created user's data
       const createdUser: CreateUserResponse = {
         id: newUser.id,
         email: email
@@ -95,10 +99,6 @@ export class AuthService {
 
   /* ========= ADMIN FUNCTIONS ========= */
 
-  /**
-   * Retrieves a list of pending users (those with status 'pending').
-   * Adjust the filter if your schema uses a different field or value.
-   */
   async getPendingUsers(): Promise<any[]> {
     try {
       const pendingUsers = await this.pb.collection(this.collection).getFullList({
@@ -111,11 +111,17 @@ export class AuthService {
     }
   }
 
-  /**
-   * Updates a user's status (e.g., 'approved' or 'denied').
-   * @param userId The record ID of the user.
-   * @param status The new status to apply.
-   */
+  async getApprovedUsers(): Promise<any[]> {
+    try {
+      return await this.pb.collection(this.collection).getFullList({
+        filter: 'status="approved"'
+      });
+    } catch (error) {
+      console.error('Error fetching approved users:', error);
+      throw error;
+    }
+  }
+
   async updateUserStatus(userId: string, status: string): Promise<any> {
     try {
       const updatedRecord = await this.pb.collection(this.collection).update(userId, { status });
