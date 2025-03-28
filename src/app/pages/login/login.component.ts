@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
-import { AuthService } from '../../services/auth/auth.service';
 import { CommonModule } from '@angular/common';
 import PocketBase from 'pocketbase';
 
@@ -16,13 +15,11 @@ export class LoginComponent {
   password: string = '';
   errorMessage: string = '';
   successMessage: string = '';
-  isLoading = false; // Spinner state
-
-  pb = new PocketBase('http://127.0.0.1:8090'); // Change to your PocketBase URL
+  isLoading = false; 
+  pb = new PocketBase('http://127.0.0.1:8090'); 
 
   constructor(private router: Router) {}
 
-  // Login Function
   async onLogin(form: NgForm) {
     if (form.invalid) return;
 
@@ -33,7 +30,13 @@ export class LoginComponent {
     setTimeout(async () => {
       try {
         await this.pb.collection('users').authWithPassword(this.email, this.password);
-        this.router.navigate(['/dashboard']); // Redirect on success
+        const user = this.pb.authStore.model;
+
+        if (user && user['role'] === 'admin') {
+          this.router.navigate(['/it-department']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       } catch (error) {
         this.errorMessage = 'Invalid Credentials!';
       } finally {
@@ -42,7 +45,6 @@ export class LoginComponent {
     }, 1500);
   }
 
-  // Forgot Password Function
   async sendResetEmail() {
     this.successMessage = '';
     this.errorMessage = '';
@@ -63,5 +65,4 @@ export class LoginComponent {
   goToCreateAccount() {
     this.router.navigate(['/register-account']);
   }
-
 }

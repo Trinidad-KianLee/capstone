@@ -7,6 +7,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { RequestComponent } from './pages/request/request.component'; // ✅ Import Request Component
 import { authGuard } from './guards/auth.guard';
 import { RegisterAccountComponent } from './pages/register-account/register-account.component';
+import { ItDepartmentComponent } from './pages/it-department/it-department.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -17,5 +18,7 @@ export const routes: Routes = [
     { path: 'document', component: DocumentComponent, canActivate: [authGuard] },
     { path: 'activities', component: ActivitiesComponent, canActivate: [authGuard] },
     { path: 'request', component: RequestComponent, canActivate: [authGuard] },
+    { path: 'it-department', component: ItDepartmentComponent, canActivate: [authGuard] },
+
     { path: '**', redirectTo: '/login' }
   ];
