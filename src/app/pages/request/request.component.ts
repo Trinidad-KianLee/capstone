@@ -8,13 +8,14 @@ import { PostService } from '../../services/post/post.service';
   templateUrl: './request.component.html',
   styleUrls: ['./request.component.css'],
   standalone: true,
+  // 1) Include CommonModule and FormsModule here for *ngIf, *ngFor, [ngClass], [(ngModel)], etc.
   imports: [CommonModule, FormsModule],
 })
 export class RequestComponent {
+  // Original code, including the 'step' and 'selectedPlaceholder' fields, sub-arrays, etc.
   step = 1;
   selectedPlaceholder = '';
 
-  // Removed other placeholders if you want. Keep if needed
   placeholders: string[] = [
     'Contracts',
     'Demand Letters',
@@ -22,8 +23,6 @@ export class RequestComponent {
     'Regulatory Compliance',
     'Others'
   ];
-
-  // If you still want sub-contract logic, keep these arrays:
   subContracts: string[] = [
     '1.1 Contracts with vendors',
     '1.2 Contracts with third party repair',
@@ -44,23 +43,17 @@ export class RequestComponent {
     '4.8 AMLC'
   ];
 
-  // 'message' is still here if you want to store text. 
-  // If you truly want only an image, you can remove 'message' and the text field
   message = '';
-
   selectedFile?: File;
   fileRequiredError = false;
 
-  // Sub-type
   selectedSubType: string = '';
   subTypeError = false;
 
-  // For success notification
   submitSuccess = false;
 
   constructor(private postService: PostService) {}
 
-  // Step nav
   goNext() {
     if (!this.selectedPlaceholder) return;
     this.step = 2;
@@ -75,7 +68,6 @@ export class RequestComponent {
     this.selectedPlaceholder = placeholder;
   }
 
-  // Only accept images
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) {
@@ -112,12 +104,13 @@ export class RequestComponent {
     formData.append('submission_date', new Date().toISOString());
     formData.append('feedback', '');
     formData.append('action', 'Delete');
-    // If you want to store text:
     formData.append('message', this.message || '');
     formData.append('sub_type', this.selectedSubType || '');
-    
-    // Only image
-    formData.append('attachment', this.selectedFile);
+    formData.append('attachment', this.selectedFile!);
+
+    // 2) If your PocketBase schema requires 'uploadedBy', add it:
+    formData.append('uploadedBy', 'FAKE_USER_ID'); 
+    // Replace 'FAKE_USER_ID' with your actual user ID logic
 
     // Send to PocketBase
     this.postService.createPost(formData).subscribe({
