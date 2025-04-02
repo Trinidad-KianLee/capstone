@@ -1,7 +1,7 @@
 <div class="flex min-h-screen bg-white">
   <div class="flex-grow p-12">
     <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg min-h-[700px] flex flex-col justify-between">
-      
+
       <div>
         <h1 class="text-3xl font-semibold mb-2">REQUEST A CONTRACT NOW</h1>
         <p class="text-gray-600 leading-relaxed">
@@ -16,25 +16,17 @@
         <!-- STEP 1 -->
         <div *ngIf="step === 1; else step2Content" class="mt-8">
           <div class="grid grid-cols-2 gap-8">
-            <a
-              *ngFor="let placeholder of placeholders"
-              href="#"
-              class="border rounded-lg p-6 text-center block"
+            <a *ngFor="let placeholder of placeholders" href="#" class="border rounded-lg p-6 text-center block"
               [ngClass]="{
                 'border-gray-300 text-gray-600 hover:bg-gray-100': selectedPlaceholder !== placeholder,
                 'border-blue-500 text-blue-600 bg-blue-50': selectedPlaceholder === placeholder
-              }"
-              (click)="selectPlaceholder($event, placeholder)"
-            >
+              }" (click)="selectPlaceholder($event, placeholder)">
               <span class="font-medium">{{ placeholder }}</span>
             </a>
           </div>
 
-          <button
-            class="px-4 py-2 mt-8 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-            (click)="goNext()"
-            [disabled]="!selectedPlaceholder"
-          >
+          <button class="px-4 py-2 mt-8 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+            (click)="goNext()" [disabled]="!selectedPlaceholder">
             Next
           </button>
         </div>
@@ -51,10 +43,7 @@
             <ng-container *ngIf="selectedPlaceholder === 'Contracts'; else checkReg">
               <label class="block mb-4">
                 <span class="text-gray-700">Select Sub-Contract Type</span>
-                <select
-                  class="select select-bordered w-full mt-1"
-                  [(ngModel)]="selectedSubType"
-                >
+                <select class="select select-bordered w-full mt-1" [(ngModel)]="selectedSubType">
                   <option value="">--Select a Sub-Contract Type--</option>
                   <option *ngFor="let sub of subContracts" [value]="sub">
                     {{ sub }}
@@ -71,10 +60,7 @@
               <ng-container *ngIf="selectedPlaceholder === 'Regulatory Compliance'; else normalForm">
                 <label class="block mb-4">
                   <span class="text-gray-700">Select Sub-Regulatory Type</span>
-                  <select
-                    class="select select-bordered w-full mt-1"
-                    [(ngModel)]="selectedSubType"
-                  >
+                  <select class="select select-bordered w-full mt-1" [(ngModel)]="selectedSubType">
                     <option value="">--Select a Regulatory Type--</option>
                     <option *ngFor="let reg of subReg" [value]="reg">
                       {{ reg }}
@@ -99,24 +85,16 @@
               <!-- (Optional) remove if you truly want only an image -->
               <label class="block">
                 <span class="text-gray-700">Message (optional)</span>
-                <input
-                  type="text"
-                  class="input input-bordered w-full mt-1"
-                  placeholder="Any note or message"
-                  [(ngModel)]="message"
-                />
+                <input type="text" class="input input-bordered w-full mt-1" placeholder="Any note or message"
+                  [(ngModel)]="message" />
               </label>
 
               <!-- Upload Documents (Images only) -->
               <label class="block">
                 <span class="text-gray-700">Upload Document (image only)</span>
                 <!-- accept="image/*" ensures user can only select images -->
-                <input
-                  type="file"
-                  accept="image/*"
-                  class="file-input file-input-bordered w-full mt-1"
-                  (change)="onFileSelected($event)"
-                />
+                <input type="file" accept="image/*" class="file-input file-input-bordered w-full mt-1"
+                  (change)="onFileSelected($event)" />
                 <div *ngIf="fileRequiredError" class="text-red-600 text-sm mt-1">
                   An image file is required.
                 </div>
@@ -125,67 +103,49 @@
 
             <!-- Action Buttons -->
             <div class="flex space-x-6 mt-6">
-              <button
-                (click)="goBack()"
-                class="px-4 py-2 rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
-              >
+              <button (click)="goBack()"
+                class="px-4 py-2 rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white">
                 Back
               </button>
-              <button
-                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                (click)="submitRequest()"
-              >
+              <button class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700" (click)="submitRequest()">
                 Submit
               </button>
             </div>
 
             <!-- Show success notification if "submitSuccess" is true -->
-            <div
-              *ngIf="submitSuccess"
-              class="mt-4 p-3 bg-green-100 text-green-700 rounded"
-            >
+            <div *ngIf="submitSuccess" class="mt-4 p-3 bg-green-100 text-green-700 rounded">
               Successfully submitted!
             </div>
           </div>
         </ng-template>
       </div>
-      
+
       <!-- Step Indicators -->
       <div>
         <div class="flex justify-center items-center space-x-6 mt-6">
           <!-- Step 1 -->
           <div class="flex items-center space-x-2">
-            <div
-              class="w-6 h-6 rounded-full flex items-center justify-center text-sm text-white"
-              [ngClass]="step === 1 ? 'bg-blue-600' : 'bg-gray-400'"
-            >
+            <div class="w-6 h-6 rounded-full flex items-center justify-center text-sm text-white"
+              [ngClass]="step === 1 ? 'bg-blue-600' : 'bg-gray-400'">
               1
             </div>
-            <span
-              [ngClass]="step === 1 ? 'text-blue-600 font-medium' : 'text-gray-600'"
-            >
+            <span [ngClass]="step === 1 ? 'text-blue-600 font-medium' : 'text-gray-600'">
               Select Contract
             </span>
           </div>
           <!-- Step 2 -->
           <div class="flex items-center space-x-2">
-            <div
-              class="w-6 h-6 rounded-full flex items-center justify-center text-sm text-white"
-              [ngClass]="step === 2 ? 'bg-blue-600' : 'bg-gray-400'"
-            >
+            <div class="w-6 h-6 rounded-full flex items-center justify-center text-sm text-white"
+              [ngClass]="step === 2 ? 'bg-blue-600' : 'bg-gray-400'">
               2
             </div>
-            <span
-              [ngClass]="step === 2 ? 'text-blue-600 font-medium' : 'text-gray-600'"
-            >
+            <span [ngClass]="step === 2 ? 'text-blue-600 font-medium' : 'text-gray-600'">
               Fill Details
             </span>
           </div>
           <!-- Step 3 (not implemented) -->
           <div class="flex items-center space-x-2 opacity-50">
-            <div
-              class="w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm"
-            >
+            <div class="w-6 h-6 rounded-full bg-gray-400 text-white flex items-center justify-center text-sm">
               3
             </div>
             <span class="text-gray-600">Review &amp; Submit</span>
@@ -196,16 +156,20 @@
   </div>
 
   <!-- RIGHT SIDEBAR (remove if you want no sidebar) -->
-  <aside class="w-80 bg-gray-50 border-l p-8">
+  <aside class="w-80 p-8">
     <div class="flex flex-col items-center">
-      <img
-        src="https://via.placeholder.com/80"
-        alt="Profile"
-        class="rounded-full w-20 h-20"
-      />
+      <img src="https://i.pinimg.com/736x/87/e2/eb/87e2eb4b34c6b71155f004994d40acba.jpg" alt="Profile"
+        class="rounded-full w-20 h-20" />
       <h2 class="mt-2 text-lg font-semibold">John Doe</h2>
       <p class="text-neutral">Business Department</p>
-      <button class="btn btn-outline w-full mt-4">⚙️ Account Settings</button>
+      <button class="btn btn-outline w-full mt-4"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+          viewBox="0 0 24 24">
+          <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <path
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37c1 .608 2.296.07 2.572-1.065" />
+            <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0-6 0" />
+          </g>
+        </svg> Account Settings</button>
     </div>
     <div class="mt-8">
       <h3 class="text-lg font-semibold mb-2">Notifications</h3>
