@@ -24,15 +24,12 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<any> {
     try {
-      // Authenticate the user using PocketBase auth endpoint
       const authData = await this.pb.collection(this.collection).authWithPassword(email, password);
       console.log('Authenticated user record (from authWithPassword):', authData.record);
-      
-      // Re-fetch the full user record so custom fields (like status) are loaded
+
       const fullUserRecord = await this.pb.collection(this.collection).getOne(authData.record.id);
       console.log('Full user record:', fullUserRecord);
-      
-      // If the account is not approved, log out and throw an error
+
       if (fullUserRecord && fullUserRecord['status'] !== 'approved') {
         this.logout();
         throw new Error('Your account is not approved yet.');
@@ -54,7 +51,6 @@ export class AuthService {
     additionalData?: any
   ): Promise<CreateUserResponse> {
     try {
-      // Merge additional data with a default status of 'pending'
       const data = { 
         email, 
         password, 
@@ -63,11 +59,9 @@ export class AuthService {
         status: 'pending' 
       };
 
-      // Create the user record with status set to "pending"
       const newUser = await this.pb.collection(this.collection).create(data);
       console.log('User registration successful:', newUser);
 
-      // Do not auto-login; simply return the created user's data
       const createdUser: CreateUserResponse = {
         id: newUser.id,
         email: email
@@ -96,8 +90,6 @@ export class AuthService {
   getUser(): any {
     return this.user ? this.user : {};
   }
-
-  /* ========= ADMIN FUNCTIONS ========= */
 
   async getPendingUsers(): Promise<any[]> {
     try {
