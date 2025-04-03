@@ -1,35 +1,70 @@
-<div class="flex min-h-screen">
-  <!-- LEFT SIDEBAR (BLUE) -->
-  <!-- Only show the sidebar if 'without()' is false -->
-  <aside *ngIf="!without()" class="w-64 bg-blue-600 text-white p-6 space-y-6">
+<div *ngIf="!without()">
+  <!-- Hamburger Button (Fixed Top Left) -->
+  <div class="fixed top-4 left-4 z-50">
+    <button (click)="toggleSidebar()" class="btn btn-primary">
+      <span *ngIf="!isSidebarOpen">&#9776;</span>
+      <span *ngIf="isSidebarOpen">&times;</span>
+    </button>
+  </div>
+
+  <!-- Sidebar (Left Sliding Drawer) -->
+  <!-- Add 'pt-16' to push content below the floating button -->
+  <aside 
+    class="fixed top-0 left-0 h-full w-64 bg-blue-600 text-white pt-16 px-6 pb-6 space-y-6 
+           transition-transform duration-300 z-40"
+    [ngClass]="{
+      '-translate-x-full': !isSidebarOpen,
+      'translate-x-0': isSidebarOpen
+    }">
+
     <h1 class="text-xl font-bold">SENTINEL</h1>
     <nav class="space-y-4">
-      <a routerLink="/dashboard" routerLinkActive="bg-white text-blue-600"
-        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg font-semibold">
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="bg-white text-blue-600"
+        (click)="handleNavClick()"
+        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg font-semibold"
+      >
         🏠 Home
       </a>
-      <a routerLink="/task" routerLinkActive="bg-white text-blue-600"
-        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg">
+      <a
+        routerLink="/task"
+        routerLinkActive="bg-white text-blue-600"
+        (click)="handleNavClick()"
+        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg"
+      >
         📦 Task
       </a>
-      <a routerLink="/document" routerLinkActive="bg-white text-blue-600"
-        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg">
+      <a
+        routerLink="/document"
+        routerLinkActive="bg-white text-blue-600"
+        (click)="handleNavClick()"
+        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg"
+      >
         📄 Documents
       </a>
-      <a routerLink="/activities" routerLinkActive="bg-white text-blue-600"
-        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg">
+      <a
+        routerLink="/activities"
+        routerLinkActive="bg-white text-blue-600"
+        (click)="handleNavClick()"
+        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg"
+      >
         📋 Activities
       </a>
     </nav>
     <div class="mt-10">
-      <a href="#" (click)="logout()" class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg">
+      <a
+        href="#"
+        (click)="logout(); handleNavClick()"
+        class="flex items-center space-x-3 p-3 hover:bg-white hover:text-blue-600 rounded-lg"
+      >
         🔄 Logout
       </a>
     </div>
   </aside>
-  
-  <!-- MAIN CONTENT (White Background) -->
-  <main class="w-full h-full">
-    <router-outlet></router-outlet>
-  </main>
 </div>
+
+<!-- Main Content Area -->
+<main class="w-full h-full">
+  <router-outlet></router-outlet>
+</main>
