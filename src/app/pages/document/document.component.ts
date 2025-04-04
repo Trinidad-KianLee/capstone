@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { PostService } from '../../services/post/post.service';
+import PocketBase from 'pocketbase';
 
 @Component({
   selector: 'app-document',
@@ -12,6 +12,7 @@ import { PostService } from '../../services/post/post.service';
 export class DocumentComponent implements OnInit {
   posts: any[] = [];
   errorMsg: string | null = null;
+  pb = new PocketBase('http://127.0.0.1:8090'); // Add PocketBase instance
 
   // For the image modal
   showModal = false;
@@ -21,69 +22,31 @@ export class DocumentComponent implements OnInit {
   showMessageModal = false;
   selectedMessage = '';
 
-  // NEW: Delete Confirmation
-  showDeleteModal = false;       // Controls delete modal visibility
-  postToDelete: any = null;      // The post to be deleted
+  // Delete Confirmation
+  showDeleteModal = false;
+  postToDelete: any = null;
 
-  constructor(private postService: PostService) {}
+  constructor() {}
 
-  ngOnInit(): void {
-    this.get();
+  async ngOnInit(): Promise<void> {
+    await this.loadDocuments();
   }
 
-  get() {
-    this.errorMsg = null;
-    this.postService.getPosts().subscribe({
-      next: (data) => {
-        this.posts = data.items || data;
-        console.log('Fetched docs:', this.posts);
-      },
-      error: (err) => {
-        console.error('Error fetching docs:', err);
-        this.errorMsg = err.message || 'Unknown error fetching documents';
-      },
-    });
-  }
-
-  // Replaces the direct delete call in the template
-  confirmDelete(post: any) {
-    // Save the post we intend to delete and open the modal
-    this.postToDelete = post;
-    this.showDeleteModal = true;
-  }
-
-  // If user cancels the delete
-  cancelDelete() {
-    this.postToDelete = null;
-    this.showDeleteModal = false;
-  }
-
-  // If user confirms
-  confirmDeleteYes() {
-    if (!this.postToDelete) return;
-    this.delete(this.postToDelete.id);
-    this.postToDelete = null;
-    this.showDeleteModal = false;
-  }
-
-  // Your existing delete logic remains the same
-  delete(id: string) {
-    this.errorMsg = null;
-    this.postService.deletePost(id).subscribe({
-      next: () => {
-        console.log('Deleted doc:', id);
-        this.get();
-      },
-      error: (err) => {
-        console.error('Error deleting doc:', err);
-        this.errorMsg = err.message || 'Unknown error deleting document';
-      },
-    });
+  async loadDocuments() {
+    try {
+      // Use the same PocketBase query as dashboard
+      const records = await this.pb.collection('document').getFullList();
+      this.posts = records;
+      console.log('Fetched documents:', this.posts);
+    } catch (err) {
+      console.error('Error fetching documents:', err);
+      this.errorMsg = (err instanceof Error ? err.message : 'Unknown error') || 'Failed to load documents';
+    }
   }
 
   getAttachmentUrl(post: any): string {
     if (!post.attachment) return '';
-    return `http://localhost:8090/api/files/document/${post.id}/${post.attachment}`;
+    return `http://127.0.0.1:8090/api/files/document/${post.id}/${post.attachment}`;
   }
 
   openModal(post: any) {
@@ -99,7 +62,6 @@ export class DocumentComponent implements OnInit {
     this.selectedImageUrl = '';
   }
 
-  // Called when user clicks "See Message"
   onSeeMessage(post: any) {
     this.selectedMessage = post.message || '(No message provided)';
     this.showMessageModal = true;
@@ -108,5 +70,32 @@ export class DocumentComponent implements OnInit {
   closeMessageModal() {
     this.showMessageModal = false;
     this.selectedMessage = '';
+  }
+
+  confirmDelete(post: any) {
+    this.postToDelete = post;
+    this.showDeleteModal = true;
+  }
+
+  cancelDelete() {
+    this.postToDelete = null;
+    this.showDeleteModal = false;
+  }
+
+  async confirmDeleteYes() {
+    if (!this.postToDelete) return;
+    await this.deleteDocument(this.postToDelete.id);
+    this.postToDelete = null;
+    this.showDeleteModal = false;
+  }
+
+  async deleteDocument(docId: string) {
+    try {
+      await this.pb.collection('document').delete(docId);
+      this.posts = this.posts.filter(d => d.id !== docId);
+    } catch (err) {
+      console.error('Error deleting document:', err);
+      this.errorMsg = (err instanceof Error ? err.message : 'Unknown error') || 'Failed to delete document';
+    }
   }
 }
