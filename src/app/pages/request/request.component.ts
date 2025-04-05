@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PostService } from '../../services/post/post.service';
+import { DocumentsService } from '../../services/documents.service';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-request',
@@ -9,7 +11,7 @@ import { PostService } from '../../services/post/post.service';
   styleUrls: ['./request.component.css'],
   standalone: true,
   // 1) Include CommonModule and FormsModule here for *ngIf, *ngFor, [ngClass], [(ngModel)], etc.
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
 })
 export class RequestComponent {
   // Original code, including the 'step' and 'selectedPlaceholder' fields, sub-arrays, etc.
@@ -52,7 +54,9 @@ export class RequestComponent {
 
   submitSuccess = false;
 
-  constructor(private postService: PostService) {}
+  constructor(private postService: PostService,
+     private documentService: DocumentsService,
+     private authService: AuthService) {}
 
   goNext() {
     if (!this.selectedPlaceholder) return;
@@ -96,7 +100,7 @@ export class RequestComponent {
     }
     this.subTypeError = false;
 
-    // Build FormData
+   // Build FormData
     const formData = new FormData();
     formData.append('document', this.selectedPlaceholder || 'N/A');
     formData.append('type', 'Request');
@@ -109,21 +113,22 @@ export class RequestComponent {
     formData.append('attachment', this.selectedFile!);
 
     // 2) If your PocketBase schema requires 'uploadedBy', add it:
-    formData.append('uploadedBy', 'FAKE_USER_ID'); 
+    formData.append('uploadedBy',this.authService.getUser().id ); 
     // Replace 'FAKE_USER_ID' with your actual user ID logic
 
     // Send to PocketBase
-    this.postService.createPost(formData).subscribe({
-      next: (res) => {
-        console.log('Created new document:', res);
-        this.submitSuccess = true;
-        setTimeout(() => {
-          this.submitSuccess = false;
-        }, 2000);
-      },
-      error: (err) => {
-        console.error('Error creating document:', err);
-      },
-    });
+    this.documentService.createDocument(formData)
+      .then((res) => {
+      console.log('Created new document:', res);
+      this.submitSuccess = true;
+      setTimeout(() => {
+        this.submitSuccess = false;
+      }, 2000);
+      })
+      .catch((err) => {
+      console.error('Error creating document:', err);
+      });
+  
+  // this.pb.createDocument()
   }
 }

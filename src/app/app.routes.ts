@@ -8,17 +8,19 @@ import { RequestComponent } from './pages/request/request.component'; // ✅ Imp
 import { authGuard } from './guards/auth.guard';
 import { RegisterAccountComponent } from './pages/register-account/register-account.component';
 import { ItDepartmentComponent } from './pages/it-department/it-department.component';
+import { RequestFormComponent } from './pages/request-form/request-form.component';
 
 export const routes: Routes = [
-    { path: '', redirectTo: '/login', pathMatch: 'full' },
-    { path: 'login', component: LoginComponent },
-    { path: 'register-account', component: RegisterAccountComponent },
-    { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
-    { path: 'task', component: TaskComponent, canActivate: [authGuard] },
-    { path: 'document', component: DocumentComponent, canActivate: [authGuard] },
-    { path: 'activities', component: ActivitiesComponent, canActivate: [authGuard] },
-    { path: 'request', component: RequestComponent, canActivate: [authGuard] },
-    { path: 'it-department', component: ItDepartmentComponent, canActivate: [authGuard] },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
+  { path: 'register-account', component: RegisterAccountComponent },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'task', component: TaskComponent, canActivate: [authGuard] },
+  { path: 'document', component: DocumentComponent, canActivate: [authGuard] },
+  { path: 'activities', component: ActivitiesComponent, canActivate: [authGuard] },
+  { path: 'request', component: RequestComponent, canActivate: [authGuard] },
+  { path: 'it-department', component: ItDepartmentComponent, canActivate: [authGuard] },
+  { path: 'request-form', component: RequestFormComponent, canActivate: [authGuard] }, // Added missing component
 
-    { path: '**', redirectTo: '/login' }
-  ];
+  { path: '**', redirectTo: '/login' }
+];

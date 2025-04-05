@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import PocketBase from 'pocketbase';
+import { ForwardDocumentService } from '../../services/states/forward-document.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -37,7 +38,8 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private forwardDocumentService: ForwardDocumentService
   ) {}
 
   ngOnInit() {
@@ -179,4 +181,10 @@ export class DashboardComponent implements OnInit {
       console.error('Error deleting document:', err);
     }
   }
+
+  forwardDocument(document: any){
+    this.forwardDocumentService.setDocument(document);
+    this.router.navigate(['/request-form']);
+  }
+
 }
