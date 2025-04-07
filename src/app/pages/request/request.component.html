@@ -112,8 +112,7 @@
                 <!-- accept="image/*" ensures user can only select images -->
                 <input
                   type="file"
-                  accept="image/*"
-                  class="file-input file-input-bordered w-full mt-1"
+                  accept="image/*,application/pdf"                  class="file-input file-input-bordered w-full mt-1"
                   (change)="onFileSelected($event)"
                 />
                 <div *ngIf="fileRequiredError" class="text-red-600 text-sm mt-1">

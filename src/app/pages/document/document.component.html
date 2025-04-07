@@ -17,16 +17,12 @@
           <th class="text-left py-2">Submission Date</th>
           <th class="text-left py-2">Sub Type</th>
           <th class="text-left py-2">Attachment</th>
-          <!-- Move "Message" column before "Action" -->
           <th class="text-left py-2">Message</th>
           <th class="text-left py-2">Action</th>
         </tr>
       </thead>
       <tbody>
-        <tr
-          *ngFor="let post of posts"
-          class="border-b hover:bg-gray-100"
-        >
+        <tr *ngFor="let post of posts" class="border-b hover:bg-gray-100">
           <td class="py-3">{{ post.document }}</td>
           <td class="py-3">{{ post.type }}</td>
           <td class="py-3">
@@ -53,8 +49,6 @@
               <span class="text-gray-400">No image</span>
             </ng-template>
           </td>
-
-          <!-- "Message" column -->
           <td class="py-3">
             <button
               class="text-blue-500 hover:underline"
@@ -63,8 +57,6 @@
               See Message
             </button>
           </td>
-
-          <!-- "Action" column: replaced direct delete with "confirmDelete" -->
           <td class="py-3">
             <button
               (click)="confirmDelete(post)"
@@ -88,7 +80,7 @@
   </div>
 </div>
 
-<!-- MODAL for full-screen image with translucent overlay -->
+<!-- MODAL for full-screen image -->
 <div
   class="fixed inset-0 flex items-center justify-center bg-black/40"
   *ngIf="showModal"
@@ -127,7 +119,7 @@
   </div>
 </div>
 
-<!-- NEW: DELETE CONFIRMATION MODAL -->
+<!-- DELETE CONFIRMATION MODAL -->
 <div
   class="fixed inset-0 flex items-center justify-center bg-black/40"
   *ngIf="showDeleteModal"
