@@ -1,42 +1,57 @@
 <div class="bg-base-200 min-h-screen flex items-center justify-center p-4">
     <div class="card bg-base-100 shadow-xl w-full max-w-lg">
-        <div class="card-body">
-            <h2 class="card-title text-2xl font-bold mb-6">Document Submission Form</h2>
-
-            <form [formGroup]="form" (ngSubmit)="onSubmit()">
-
-                <div class="form-control w-full mb-4">
-                    <label class="label">
-                        <span class="label-text">Sent By</span>
-                    </label>
-                    <input type="text" formControlName="sent_by" name="sent_by" placeholder="Your name or email"
-                        class="input input-bordered w-full" [value]="authService.getUser().email || ''" disabled />
-                </div>
-
-                <div class="form-control w-full mb-4">
-                    <label class="label">
-                        <span class="label-text">Sent To</span>
-                    </label>
-                    <select class="select w-full" formControlName="sent_to" name="sent_to"> 
-                        <option disabled selected>Select Department</option>
-                        <option value="finance">Finance</option>
-                        <option value="legal">Legal</option>
-                        <option value="ceo">CEO</option>
-                      </select>
-                </div>
-
-
-                <div class="form-control w-full mb-6">
-                    <label class="label">
-                        <span class="label-text">Document</span>
-                    </label>
-                    <input class="input w-full" formControlName="document" name="document" [value]="document.id" disabled >
-                </div>
-
-                <div class="form-control mt-6">
-                    <button class="btn btn-primary">Submit</button>
-                </div>
-            </form>
-        </div>
+      <div class="card-body">
+        <h2 class="card-title text-2xl font-bold mb-6">Document Submission Form</h2>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <!-- Sent By -->
+          <div class="form-control w-full mb-4">
+            <label class="label">
+              <span class="label-text">Sent By</span>
+            </label>
+            <input
+              type="text"
+              formControlName="sent_by"
+              class="input input-bordered w-full"
+            />
+          </div>
+  
+          <!-- Sent To -->
+          <div class="form-control w-full mb-4">
+            <label class="label">
+              <span class="label-text">Sent To</span>
+            </label>
+            <select class="select w-full" formControlName="sent_to" name="sent_to">
+              <option disabled selected>Select Department</option>
+              <option value="finance">Finance</option>
+              <option value="legal">Legal</option>
+              <option value="ceo">CEO</option>
+            </select>
+          </div>
+  
+          <!-- Document -->
+          <div class="form-control w-full mb-6">
+            <label class="label">
+              <span class="label-text">Document</span>
+            </label>
+            <input
+              class="input w-full"
+              formControlName="document"
+              name="document"
+            />
+          </div>
+  
+          <!-- PDF Preview -->
+          <div class="mt-6" *ngIf="pdfPreviewUrl">
+            <h3 class="mb-2 font-bold">PDF Preview:</h3>
+            <!-- Bind the SafeResourceUrl here -->
+            <embed [src]="pdfPreviewUrl" type="application/pdf" width="100%" height="600px" />
+          </div>
+  
+          <div class="form-control mt-6">
+            <button class="btn btn-primary" type="submit">Submit</button>
+          </div>
+        </form>
+      </div>
     </div>
-</div>
+  </div>
+  
