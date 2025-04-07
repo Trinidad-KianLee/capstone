@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  title = 'my-ojt'; // Added title property
   isSidebarOpen = false;
 
   constructor(private authService: AuthService, private router: Router) {}
