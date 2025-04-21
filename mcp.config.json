@@ -1,0 +1,111 @@
+{
+  "name": "pocketbase-mcp",
+  "description": "MCP server implementation for PocketBase",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "createDocument",
+      "description": "Create a new document in PocketBase",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "type": "string",
+            "description": "Document title or name"
+          },
+          "type": {
+            "type": "string",
+            "description": "Document type"
+          },
+          "attachment": {
+            "type": "string",
+            "format": "binary",
+            "description": "File attachment"
+          }
+        },
+        "required": ["document"]
+      }
+    },
+    {
+      "name": "getDocument",
+      "description": "Get a document by ID",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Document ID"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "listDocuments",
+      "description": "List documents with optional filtering",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "Filter query"
+          }
+        }
+      }
+    },
+    {
+      "name": "updateDocument",
+      "description": "Update an existing document",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Document ID"
+          },
+          "data": {
+            "type": "object",
+            "description": "Document data to update"
+          }
+        },
+        "required": ["id", "data"]
+      }
+    },
+    {
+      "name": "deleteDocument",
+      "description": "Delete a document",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Document ID"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "forwardDocument",
+      "description": "Forward a document as a request",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "type": "string",
+            "description": "Document reference"
+          },
+          "type": {
+            "type": "string",
+            "description": "Request type"
+          },
+          "message": {
+            "type": "string",
+            "description": "Request message"
+          }
+        },
+        "required": ["document", "type"]
+      }
+    }
+  ]
+}
