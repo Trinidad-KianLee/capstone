@@ -1,22 +1,157 @@
-<p>navbar works!</p>
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <div class="nav-sec">
-      hello
-      <input type="text" name="Shesh" />
+<nav class="bg-white border-b border-gray-200 fixed w-full z-30">
+  <div class="px-3 py-3 md:px-6 lg:px-8">
+    <div class="flex items-center justify-between">
+      <!-- Logo and brand name -->
+      <div class="flex-shrink-0 flex items-center">
+        <a routerLink="/dashboard" class="flex items-center gap-2">
+          <!-- Replace with your own logo -->
+          <svg class="h-8 w-auto text-blue-600" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" />
+            <path d="M2 17L12 22L22 17" />
+            <path d="M2 12L12 17L22 12" />
+          </svg>
+          <span class="text-xl font-bold text-gray-800 hidden md:inline-block">DocFlow</span>
+        </a>
+      </div>
+      
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex md:items-center md:space-x-6">
+        <a 
+          *ngFor="let nav of navigationItems" 
+          [routerLink]="nav.route" 
+          routerLinkActive="text-blue-600 border-b-2 border-blue-600" 
+          [routerLinkActiveOptions]="{exact: true}"
+          class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-150">
+          {{ nav.name }}
+        </a>
+      </div>
+
+      <!-- Right side user menu and notifications -->
+      <div class="flex items-center gap-2">
+        <!-- Search button -->
+        <button class="p-2 text-gray-500 rounded-lg hover:bg-gray-100 hidden sm:block">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+        
+        <!-- Notifications dropdown -->
+        <div class="relative">
+          <button class="p-2 text-gray-500 rounded-lg hover:bg-gray-100 relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            
+            <!-- Notification badge -->
+            <span *ngIf="notificationCount > 0" class="absolute top-1 right-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+          </button>
+          
+          <!-- Dropdown items would be implemented with JS -->
+        </div>
+        
+        <!-- User profile dropdown -->
+        <div class="relative" *ngIf="loggedInUser$ | async as user; else loginButton">
+          <button class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition-all">
+            <img 
+              class="h-8 w-8 rounded-full object-cover" 
+              [src]="user.image || 'https://via.placeholder.com/100'" 
+              alt="User avatar"
+            />
+          </button>
+          
+          <!-- Dropdown items would be implemented with JS -->
+        </div>
+
+        <!-- Login button if not authenticated -->
+        <ng-template #loginButton>
+          <a 
+            routerLink="/login" 
+            class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+            Sign in
+          </a>
+        </ng-template>
+        
+        <!-- Mobile menu button -->
+        <button 
+          (click)="toggleMobileMenu()"
+          class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+          aria-controls="mobile-menu"
+          [attr.aria-expanded]="isMenuOpen">
+          <span class="sr-only">Open main menu</span>
+          
+          <!-- Menu closed icon -->
+          <svg 
+            *ngIf="!isMenuOpen" 
+            class="h-6 w-6" 
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor" 
+            aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          
+          <!-- Menu open icon -->
+          <svg 
+            *ngIf="isMenuOpen" 
+            class="h-6 w-6" 
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor" 
+            aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </div>
-    <ul>
-      <li>item 1</li>
-      <li>item 1</li>
-      <li>item 1</li>
-      <li>item 1</li>
-      <li>item 1</li>
-    </ul>
-  </body>
-</html>
+  </div>
+
+  <!-- Mobile menu, shown/hidden based on menu state -->
+  <div class="md:hidden" [ngClass]="{'block': isMenuOpen, 'hidden': !isMenuOpen}" id="mobile-menu">
+    <div class="px-2 pt-2 pb-3 space-y-1 shadow-lg border-t border-gray-200">
+      <a 
+        *ngFor="let nav of navigationItems" 
+        [routerLink]="nav.route" 
+        routerLinkActive="bg-blue-50 text-blue-600" 
+        [routerLinkActiveOptions]="{exact: true}"
+        class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+        (click)="isMenuOpen = false">
+        {{ nav.name }}
+      </a>
+    </div>
+    
+    <!-- Mobile profile section -->
+    <div class="pt-4 pb-3 border-t border-gray-200" *ngIf="loggedInUser$ | async as user">
+      <div class="flex items-center px-4 py-2">
+        <div class="flex-shrink-0">
+          <img 
+            class="h-10 w-10 rounded-full object-cover" 
+            [src]="user.image || 'https://via.placeholder.com/100'" 
+            alt="User avatar"
+          />
+        </div>
+        <div class="ml-3">
+          <div class="text-base font-medium text-gray-800">{{ user.name }}</div>
+          <div class="text-sm font-medium text-gray-500">{{ user.email }}</div>
+        </div>
+        <button class="ml-auto p-2 text-gray-500 rounded-lg hover:bg-gray-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span *ngIf="notificationCount > 0" class="absolute top-1 right-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+      </div>
+      <div class="mt-3 px-2 space-y-1">
+        <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">Your Profile</a>
+        <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">Settings</a>
+        <button (click)="logout()" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600">
+          Sign out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Spacer to prevent content from hiding under navbar -->
+<div class="h-[62px] md:h-[56px]"></div>

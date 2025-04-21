@@ -17,7 +17,6 @@ export class AppComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  // The routes for which you do NOT want the sidebar to show
   urlWithoutSideBar = ["/login", "/register-account", ""];
 
   without(): boolean {
