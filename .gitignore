@@ -43,3 +43,6 @@ Thumbs.db
 
 # Pocketbase-mcp-main
 /pocketbase-mcp-main/
+
+# PocketBase data
+/pb_data/
