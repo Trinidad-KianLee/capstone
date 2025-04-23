@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core'; // Import inject
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth/auth.service';
+import { UserService } from '../../services/user.service'; // Import UserService
 
 @Component({
   selector: 'app-it-department',
@@ -17,7 +18,9 @@ export class ItDepartmentComponent implements OnInit {
   successMessage = '';
   activeTab = 'pending';
 
-  constructor(private authService: AuthService) {}
+  // Inject both services
+  private authService = inject(AuthService);
+  private userService = inject(UserService);
 
   ngOnInit(): void {
     this.loadPendingUsers();
@@ -37,11 +40,12 @@ export class ItDepartmentComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     try {
-      if (!this.authService.isLoggedIn || !this.authService.isAdmin()) {
+      // Check login status via AuthService, check admin via UserService
+      if (!this.authService.isLoggedIn || !this.userService.isAdmin()) {
         throw new Error('You need admin privileges to view pending users');
       }
       
-      this.pendingUsers = await this.authService.getPendingUsers();
+      this.pendingUsers = await this.userService.getPendingUsers(); // Use UserService
     } catch (error: any) {
       console.error('Failed to load pending users:', error);
       this.errorMessage = `Failed to load pending users: ${error.message || 'Unknown error'}`;
@@ -54,12 +58,12 @@ export class ItDepartmentComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     try {
-      // Check if user is authenticated as admin
-      if (!this.authService.isLoggedIn || !this.authService.isAdmin()) {
+      // Check login status via AuthService, check admin via UserService
+      if (!this.authService.isLoggedIn || !this.userService.isAdmin()) {
         throw new Error('You need admin privileges to view approved users');
       }
       
-      this.approvedUsers = await this.authService.getApprovedUsers();
+      this.approvedUsers = await this.userService.getApprovedUsers(); // Use UserService
     } catch (error: any) {
       console.error('Failed to load approved users:', error);
       this.errorMessage = `Failed to load approved users: ${error.message || 'Unknown error'}`;
@@ -72,7 +76,7 @@ export class ItDepartmentComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     try {
-      await this.authService.updateUserStatus(userId, 'approved');
+      await this.userService.updateUserStatus(userId, 'approved'); // Use UserService
       this.successMessage = 'User approved successfully.';
       await this.loadPendingUsers();
       await this.loadApprovedUsers(); 
@@ -89,7 +93,7 @@ export class ItDepartmentComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     try {
-      await this.authService.updateUserStatus(userId, 'denied');
+      await this.userService.updateUserStatus(userId, 'denied'); // Use UserService
       this.successMessage = 'User denied successfully.';
       await this.loadPendingUsers();
       await this.loadApprovedUsers();
@@ -106,7 +110,7 @@ export class ItDepartmentComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     try {
-      await this.authService.updateUserStatus(userId, 'disabled');
+      await this.userService.updateUserStatus(userId, 'disabled'); // Use UserService
       this.successMessage = 'User account disabled successfully.';
       await this.loadApprovedUsers();
     } catch (error: any) {
@@ -122,7 +126,7 @@ export class ItDepartmentComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
     try {
-      await this.authService.updateUserStatus(userId, 'approved');
+      await this.userService.updateUserStatus(userId, 'approved'); // Use UserService
       this.successMessage = 'User account enabled successfully.';
       await this.loadApprovedUsers();
     } catch (error: any) {

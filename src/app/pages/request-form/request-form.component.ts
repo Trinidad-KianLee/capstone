@@ -59,6 +59,11 @@ export class RequestFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    this.documentsService.forwardDocument(this.form.value);
+    // Use the renamed method 'createRequest'
+    // Also, getRawValue() is needed to include disabled controls like 'document' and 'sent_by'
+    const payload = this.form.getRawValue();
+    this.documentsService.createRequest(payload)
+      .then(res => console.log('Request created:', res))
+      .catch(err => console.error('Error creating request:', err));
   }
 }

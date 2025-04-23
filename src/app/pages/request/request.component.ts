@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core'; // Import inject
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { PostService } from '../../services/post/post.service';
+// import { PostService } from '../../services/post/post.service'; // Remove PostService import
 import { DocumentsService } from '../../services/documents.service';
 import { AuthService } from '../../services/auth/auth.service';
 
@@ -17,6 +17,7 @@ export class RequestComponent {
   // Original code, including the 'step' and 'selectedPlaceholder' fields, sub-arrays, etc.
   step = 1;
   selectedPlaceholder = '';
+  selectedFileName: string = '';
 
   placeholders: string[] = [
     'Contracts',
@@ -54,9 +55,9 @@ export class RequestComponent {
 
   submitSuccess = false;
 
-  constructor(private postService: PostService,
-     private documentService: DocumentsService,
-     private authService: AuthService) {}
+  // Inject DocumentsService and AuthService
+  private documentService = inject(DocumentsService);
+  private authService = inject(AuthService);
 
   goNext() {
     if (!this.selectedPlaceholder) return;
@@ -76,8 +77,10 @@ export class RequestComponent {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) {
       this.selectedFile = undefined;
+      this.selectedFileName = '';
     } else {
       this.selectedFile = input.files[0];
+      this.selectedFileName = this.selectedFile.name;
     }
     this.fileRequiredError = false;
   }
@@ -100,26 +103,27 @@ export class RequestComponent {
     }
     this.subTypeError = false;
 
-   // Build FormData
-    const formData = new FormData();
-    formData.append('document', this.selectedPlaceholder || 'N/A');
-    formData.append('type', 'Request');
-    formData.append('status', 'Pending');
-    formData.append('submission_date', new Date().toISOString());
-    formData.append('feedback', '');
-    formData.append('action', 'Delete');
-    formData.append('message', this.message || '');
-    formData.append('sub_type', this.selectedSubType || '');
-    formData.append('attachment', this.selectedFile!);
+    // Prepare data for the new service method
+    const documentTitle = this.selectedPlaceholder || 'N/A'; // Assuming placeholder is the title
+    const documentType = 'Request'; // Hardcoded type
+    const file = this.selectedFile!;
 
-    // 2) If your PocketBase schema requires 'uploadedBy', add it:
-    formData.append('uploadedBy',this.authService.getUser().id ); 
-    // Replace 'FAKE_USER_ID' with your actual user ID logic
+    // Prepare additional data based on your previous FormData logic
+    const additionalData = {
+      status: 'Pending',
+      submission_date: new Date().toISOString(),
+      feedback: '',
+      action: 'Delete', // Consider if this field is still needed or should be set differently
+      message: this.message || '',
+      sub_type: this.selectedSubType || '',
+      // uploadedBy is handled automatically by the service using authService
+    };
 
-    // Send to PocketBase
-    this.documentService.createDocument(formData)
+
+    // Call the consolidated service method
+    this.documentService.createDocumentWithAttachment(documentTitle, documentType, file, additionalData)
       .then((res) => {
-      console.log('Created new document:', res);
+      console.log('Created new document via DocumentsService:', res);
       this.submitSuccess = true;
       setTimeout(() => {
         this.submitSuccess = false;

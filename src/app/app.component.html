@@ -1,7 +1,8 @@
 <div class="min-h-screen">
   <!-- Show navbar only if not in login/register pages -->
-  <app-navbar *ngIf="!without()"></app-navbar>
-  
+  <!-- Listen for logoutClicked event and call AppComponent's logout method -->
+  <app-navbar *ngIf="!without()" (logoutClicked)="logout()"></app-navbar>
+
   <!-- Main Content Area -->
   <main class="w-full h-full">
     <router-outlet></router-outlet>

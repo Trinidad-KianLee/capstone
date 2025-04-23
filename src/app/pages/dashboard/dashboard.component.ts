@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core'; // Import inject
 import { AuthService } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import PocketBase from 'pocketbase';
+// import PocketBase from 'pocketbase'; // Remove local PB instance
+import { DocumentsService } from '../../services/documents.service'; // Import DocumentsService
 import { ForwardDocumentService } from '../../services/states/forward-document.service';
 
 @Component({
@@ -19,9 +20,12 @@ import { ForwardDocumentService } from '../../services/states/forward-document.s
 export class DashboardComponent implements OnInit {
   firstName: string = 'User'; // Default name
 
-  pb = new PocketBase('http://127.0.0.1:8090'); // Adjust URL if needed
+  // Remove local PB instance
+  // pb = new PocketBase('http://127.0.0.1:8090');
 
   documents: any[] = [];
+  isLoading = false; // Add loading state
+  errorMessage = ''; // Add error message state
 
   // Full-size image modal
   showModal = false;
@@ -36,11 +40,11 @@ export class DashboardComponent implements OnInit {
   showDeleteModal = false;
   docToDelete: any = null; // The doc the user intends to delete
 
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private forwardDocumentService: ForwardDocumentService
-  ) {}
+  // Inject services
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private forwardDocumentService = inject(ForwardDocumentService);
+  private documentsService = inject(DocumentsService); // Inject DocumentsService
 
   ngOnInit() {
     const user = this.authService.getUser();
@@ -58,16 +62,26 @@ export class DashboardComponent implements OnInit {
   }
 
   async loadDocuments() {
+    this.isLoading = true;
+    this.errorMessage = '';
     try {
-      const records = await this.pb.collection('document').getFullList();
-      this.documents = records;
-    } catch (err) {
+      // Use DocumentsService, decide if filtering by user is needed here
+      // Assuming dashboard shows all documents for now
+      const resultList = await this.documentsService.getDocuments(1, 200, false); // Fetch up to 200, not filtered by user
+      this.documents = resultList.items; // Get items from paginated result
+    } catch (err: any) {
       console.error('Error fetching documents:', err);
+      this.errorMessage = `Failed to load documents: ${err.message || 'Unknown error'}`;
+    } finally {
+      this.isLoading = false;
     }
   }
 
+  // Keep this URL generation logic, assuming it's correct for your setup
   getAttachmentUrl(doc: any): string {
-    return `http://127.0.0.1:8090/api/files/document/${doc.id}/${doc.attachment}`;
+    // Ensure base URL matches your PocketBase instance
+    const baseUrl = 'http://127.0.0.1:8090';
+    return `${baseUrl}/api/files/${doc.collectionId}/${doc.id}/${doc.attachment}`;
   }
 
   openModal(doc: any) {
@@ -106,46 +120,66 @@ export class DashboardComponent implements OnInit {
   }
 
   async saveEdit() {
+    if (!this.editingDoc) return;
+    this.isLoading = true;
+    this.errorMessage = '';
     try {
       const formData = new FormData();
-      formData.append('document', this.editingDoc.document || '');
-      formData.append('type', this.editingDoc.type || '');
-      formData.append('status', this.editingDoc.status || '');
-      formData.append('feedback', this.editingDoc.feedback || '');
-      formData.append('submission_date', this.editingDoc.submission_date || '');
+      // Append only fields that exist in the editingDoc object
+      if (this.editingDoc.document !== undefined) formData.append('document', this.editingDoc.document);
+      if (this.editingDoc.type !== undefined) formData.append('type', this.editingDoc.type);
+      if (this.editingDoc.status !== undefined) formData.append('status', this.editingDoc.status);
+      if (this.editingDoc.feedback !== undefined) formData.append('feedback', this.editingDoc.feedback);
+      if (this.editingDoc.submission_date !== undefined) formData.append('submission_date', this.editingDoc.submission_date);
+      // Add other fields as necessary
 
       if (this.selectedFile) {
         formData.append('attachment', this.selectedFile);
+      } else if (!this.editingDoc.attachment) {
+        // If no file is selected AND the existing doc doesn't have an attachment,
+        // explicitly set attachment to null if your backend expects it.
+        // formData.append('attachment', ''); // Or handle as needed
       }
 
-      const updated = await this.pb
-        .collection('document')
-        .update(this.editingDoc.id, formData);
+      // Use DocumentsService to update
+      const updated = await this.documentsService.updateDocument(this.editingDoc.id, formData);
 
+      // Update the local array
       const idx = this.documents.findIndex(d => d.id === updated.id);
       if (idx !== -1) {
         this.documents[idx] = updated;
       }
 
       this.showEditModal = false;
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error updating document:', err);
+      this.errorMessage = `Failed to update document: ${err.message || 'Unknown error'}`;
+    } finally {
+      this.isLoading = false;
     }
   }
 
   async removeAttachment() {
     if (!this.editingDoc) return;
+    this.isLoading = true;
+    this.errorMessage = '';
     try {
-      const updated = await this.pb.collection('document').update(this.editingDoc.id, {
+      // Use DocumentsService to update, setting attachment to null
+      const updated = await this.documentsService.updateDocument(this.editingDoc.id, {
         attachment: null,
       });
+
+      // Update local array and editing object
       const idx = this.documents.findIndex(d => d.id === updated.id);
       if (idx !== -1) {
         this.documents[idx] = updated;
       }
-      this.editingDoc.attachment = null;
-    } catch (err) {
+      this.editingDoc.attachment = null; // Update the object in the modal too
+    } catch (err: any) {
       console.error('Error removing attachment:', err);
+      this.errorMessage = `Failed to remove attachment: ${err.message || 'Unknown error'}`;
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -172,13 +206,19 @@ export class DashboardComponent implements OnInit {
     this.showDeleteModal = false;
   }
 
-  // Original delete method
+  // Updated delete method using DocumentsService
   async deleteDocument(docId: string) {
+    this.isLoading = true;
+    this.errorMessage = '';
     try {
-      await this.pb.collection('document').delete(docId);
+      await this.documentsService.deleteDocument(docId); // Use DocumentsService
+      // Update local array
       this.documents = this.documents.filter(d => d.id !== docId);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting document:', err);
+      this.errorMessage = `Failed to delete document: ${err.message || 'Unknown error'}`;
+    } finally {
+      this.isLoading = false;
     }
   }
 

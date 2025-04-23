@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core'; // Import inject
 import { CommonModule, DatePipe } from '@angular/common';
-import PocketBase from 'pocketbase';
+// import PocketBase from 'pocketbase'; // Remove local PB instance
+import { DocumentsService } from '../../services/documents.service'; // Import DocumentsService
+import { AuthService } from '../../services/auth/auth.service'; // Import AuthService for user context if needed
 
 @Component({
   selector: 'app-document',
@@ -12,7 +14,8 @@ import PocketBase from 'pocketbase';
 export class DocumentComponent implements OnInit {
   posts: any[] = [];
   errorMsg: string | null = null;
-  pb = new PocketBase('http://127.0.0.1:8090'); // Add PocketBase instance
+  isLoading = false; // Add loading state
+  // pb = new PocketBase('http://127.0.0.1:8090'); // Remove local PB instance
 
   // For the image modal
   showModal = false;
@@ -26,27 +29,38 @@ export class DocumentComponent implements OnInit {
   showDeleteModal = false;
   postToDelete: any = null;
 
-  constructor() {}
+  // Inject services
+  private documentsService = inject(DocumentsService);
+  private authService = inject(AuthService); // Inject AuthService if needed for filtering
 
   async ngOnInit(): Promise<void> {
     await this.loadDocuments();
   }
 
   async loadDocuments() {
+    this.isLoading = true;
+    this.errorMsg = null;
     try {
-      // Use the same PocketBase query as dashboard
-      const records = await this.pb.collection('document').getFullList();
-      this.posts = records;
-      console.log('Fetched documents:', this.posts);
-    } catch (err) {
+      // Use DocumentsService. Decide if this view should filter by user.
+      // Assuming this view shows ONLY the logged-in user's documents.
+      const filterByUser = true;
+      const resultList = await this.documentsService.getDocuments(1, 200, filterByUser); // Fetch up to 200, filtered by user
+      this.posts = resultList.items; // Get items from paginated result
+      console.log('Fetched user documents:', this.posts);
+    } catch (err: any) {
       console.error('Error fetching documents:', err);
-      this.errorMsg = (err instanceof Error ? err.message : 'Unknown error') || 'Failed to load documents';
+      this.errorMsg = `Failed to load documents: ${err.message || 'Unknown error'}`;
+    } finally {
+      this.isLoading = false;
     }
   }
 
   getAttachmentUrl(post: any): string {
     if (!post.attachment) return '';
-    return `http://127.0.0.1:8090/api/files/document/${post.id}/${post.attachment}`;
+    // Ensure base URL matches your PocketBase instance
+    const baseUrl = 'http://127.0.0.1:8090';
+    // Use collectionId from the record for robustness
+    return `${baseUrl}/api/files/${post.collectionId}/${post.id}/${post.attachment}`;
   }
 
   openModal(post: any) {
@@ -90,12 +104,17 @@ export class DocumentComponent implements OnInit {
   }
 
   async deleteDocument(docId: string) {
+    this.isLoading = true; // Indicate loading during delete
+    this.errorMsg = null;
     try {
-      await this.pb.collection('document').delete(docId);
+      await this.documentsService.deleteDocument(docId); // Use DocumentsService
+      // Update local array
       this.posts = this.posts.filter(d => d.id !== docId);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting document:', err);
-      this.errorMsg = (err instanceof Error ? err.message : 'Unknown error') || 'Failed to delete document';
+      this.errorMsg = `Failed to delete document: ${err.message || 'Unknown error'}`;
+    } finally {
+      this.isLoading = false;
     }
   }
 }

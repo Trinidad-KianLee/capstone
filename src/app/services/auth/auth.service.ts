@@ -7,34 +7,95 @@ export interface CreateUserResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  private pb: PocketBase;
+  // Make pb public ONLY within this service for internal use, but provide specific getters for external access
+  /* private */ pb: PocketBase; // Temporarily making it non-private for UserService access, will revert if better pattern found
   private collection = 'users';
+  private pbInitialized = false; // Flag to ensure PB is initialized only once
+
+  // Public getters for essential auth store details
+  get authStoreToken(): string | null {
+    return this.pb?.authStore?.token ?? null;
+  }
+
+  get authStoreModel(): any | null {
+    return this.pb?.authStore?.model ?? null;
+  }
 
   constructor() {
+    // Initialize PocketBase instance, but don't load auth here
     this.pb = new PocketBase('http://127.0.0.1:8090');
+    this.pbInitialized = true;
+    console.log('PocketBase instance created.');
+  }
 
-    // Try to load auth from both localStorage and cookies
-    const storedToken = localStorage.getItem('pb_auth_token');
-    if (storedToken) {
+  // This method will be called by APP_INITIALIZER
+  async loadAuthFromStorage(): Promise<void> {
+    if (!this.pbInitialized) {
+      // Fallback initialization if constructor wasn't called for some reason
+      this.pb = new PocketBase('http://127.0.0.1:8090');
+      this.pbInitialized = true;
+      console.warn('PocketBase initialized in loadAuthFromStorage (unexpected).');
+    }
+    
+    console.log('Attempting to load auth state from storage...');
+    const authDataString = localStorage.getItem('pb_auth_data');
+    
+    if (authDataString) {
       try {
-        // First try with loadFromCookie
-        this.pb.authStore.loadFromCookie(storedToken);
-        
-        // If that didn't work, try direct assignment
-        if (!this.pb.authStore.isValid) {
-          const authData = JSON.parse(storedToken);
+        const authData = JSON.parse(authDataString);
+        if (authData && authData.token && authData.model) {
           this.pb.authStore.save(authData.token, authData.model);
+          console.log('Auth state successfully loaded from localStorage.');
+          
+          // Attempt to refresh the token to validate it with the server
+          try {
+            const refreshed = await this.refreshAuth();
+            if (refreshed) {
+              console.log('Auth token refreshed successfully during initialization.');
+            } else {
+               console.log('Auth token loaded but could not be refreshed (likely expired or invalid). User will need to log in again.');
+               // No need to explicitly logout here, isLoggedIn will be false
+            }
+          } catch (refreshError) {
+             console.error('Error during initial auth refresh:', refreshError);
+             // If refresh fails, treat as logged out
+             this.logout(); 
+          }
+
+        } else {
+          console.warn('Stored auth data in localStorage is invalid. Clearing.');
+          this.clearStoredAuth();
         }
       } catch (error) {
-        console.error('Error loading auth token:', error);
-        // Clear potentially corrupt token
-        localStorage.removeItem('pb_auth_token');
+        console.error('Error parsing stored auth data from localStorage:', error);
+        this.clearStoredAuth();
+      }
+    } else {
+       console.log('No auth data found in localStorage. Attempting to load from cookie...');
+      // Attempt to load from cookie as a fallback
+      this.pb.authStore.loadFromCookie('pb_auth'); 
+      if (this.pb.authStore.isValid) {
+         console.log('Auth state loaded from cookie.');
+         // Optionally refresh here too if loaded from cookie
+         // await this.refreshAuth().catch(err => console.error('Initial cookie auth refresh failed:', err));
+      } else {
+         console.log('No valid auth state found in cookie either.');
       }
     }
   }
+
+  private clearStoredAuth(): void {
+    localStorage.removeItem('pb_auth_data');
+    localStorage.removeItem('pb_auth_token'); // Clear the other one too for consistency
+    if (this.pb?.authStore) {
+       this.pb.authStore.clear();
+    }
+     console.log('Cleared stored authentication tokens.');
+  }
+
 
   async login(email: string, password: string): Promise<any> {
     try {
@@ -101,9 +162,9 @@ export class AuthService {
   }
 
   logout(): void {
-    this.pb.authStore.clear();
-    localStorage.removeItem('pb_auth_token');
-    localStorage.removeItem('pb_auth_data');
+    this.clearStoredAuth(); // Use the helper method
+    // Optionally notify other parts of the app if needed
+    console.log('User logged out.');
   }
 
   get isLoggedIn(): boolean {
@@ -116,87 +177,6 @@ export class AuthService {
 
   getUser(): any {
     return this.user ? this.user : {};
-  }
-
-  // Check if current user is admin
-  isAdmin(): boolean {
-    if (!this.isLoggedIn) return false;
-    const currentUser = this.getUser();
-    return currentUser && currentUser.role === 'admin';
-  }
-
-  async getPendingUsers(): Promise<any[]> {
-    try {
-      // Make sure we're authenticated first
-      if (!this.isLoggedIn) {
-        throw new Error('Authentication required');
-      }
-
-      // Verify admin access since we're accessing sensitive user data
-      if (!this.isAdmin()) {
-        throw new Error('Admin privileges required');
-      }
-
-      console.log('Fetching pending users with auth token:', this.pb.authStore.token);
-      
-      const pendingUsers = await this.pb.collection(this.collection).getFullList({
-        filter: 'status="pending"',
-        sort: '+created_at'
-      });
-      
-      console.log('Pending users fetched successfully:', pendingUsers);
-      return pendingUsers;
-    } catch (error) {
-      console.error('Error fetching pending users:', error);
-      throw error;
-    }
-  }
-
-  async getApprovedUsers(): Promise<any[]> {
-    try {
-      // Make sure we're authenticated first
-      if (!this.isLoggedIn) {
-        throw new Error('Authentication required');
-      }
-
-      // Verify admin access since we're accessing sensitive user data
-      if (!this.isAdmin()) {
-        throw new Error('Admin privileges required');
-      }
-      
-      // Get both approved and disabled users to show in the active users tab
-      const users = await this.pb.collection(this.collection).getFullList({
-        filter: 'status="approved" || status="disabled"',
-        sort: '+created_at'
-      });
-      
-      console.log('Active users fetched successfully:', users);
-      return users;
-    } catch (error) {
-      console.error('Error fetching approved users:', error);
-      throw error;
-    }
-  }
-
-  async updateUserStatus(userId: string, status: string): Promise<any> {
-    try {
-      // Make sure we're authenticated first
-      if (!this.isLoggedIn) {
-        throw new Error('Authentication required');
-      }
-
-      // Verify admin access since we're modifying user data
-      if (!this.isAdmin()) {
-        throw new Error('Admin privileges required');
-      }
-      
-      const updatedRecord = await this.pb.collection(this.collection).update(userId, { status });
-      console.log(`User ${userId} updated to status: ${status}`, updatedRecord);
-      return updatedRecord;
-    } catch (error) {
-      console.error(`Error updating user status for ${userId}:`, error);
-      throw error;
-    }
   }
 
   // Refresh authentication if it exists but might be stale
@@ -222,21 +202,6 @@ export class AuthService {
     }
   }
 
-  // Get active users count (for dashboard metrics)
-  async getActiveUsersCount(): Promise<number> {
-    try {
-      if (!this.isLoggedIn || !this.isAdmin()) {
-        throw new Error('Admin privileges required');
-      }
-      
-      const result = await this.pb.collection(this.collection).getList(1, 1, {
-        filter: 'status="approved"',
-        countOnly: true
-      });
-      return result.totalItems;
-    } catch (error) {
-      console.error('Error getting active users count:', error);
-      return 0;
-    }
-  }
+  // NOTE: User management methods (isAdmin, getPendingUsers, getApprovedUsers, updateUserStatus, getActiveUsersCount)
+  // have been moved to UserService to improve separation of concerns.
 }

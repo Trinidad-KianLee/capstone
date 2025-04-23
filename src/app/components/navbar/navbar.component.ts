@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core'; // Import Output and EventEmitter
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
@@ -8,9 +8,11 @@ import { AuthService } from '../../services/auth/auth.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+  styleUrl: './navbar.component.css',
 })
 export class NavbarComponent {
+  @Output() logoutClicked = new EventEmitter<void>(); // Add event emitter
+
   isMenuOpen = false;
   notificationCount = 2; // Example count, replace with actual notification logic
   loggedInUser$: any = null;
@@ -34,8 +36,11 @@ export class NavbarComponent {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
-  logout() {
-    this.authService.logout();
-    this.loggedInUser$ = null;
+  // Method to be called by the template button to emit the event
+  onLogoutClick(): void {
+    this.logoutClicked.emit();
   }
+
+  // Removed logout() method. Logout logic should be handled by the component
+  // that includes the navbar (e.g., AppComponent) or via AuthService events.
 }
