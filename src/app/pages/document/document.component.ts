@@ -1,21 +1,20 @@
-import { Component, OnInit, inject } from '@angular/core'; // Import inject
-import { CommonModule, DatePipe } from '@angular/common';
-// import PocketBase from 'pocketbase'; // Remove local PB instance
-import { DocumentsService } from '../../services/documents.service'; // Import DocumentsService
-import { AuthService } from '../../services/auth/auth.service'; // Import AuthService for user context if needed
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DocumentsService } from '../../services/documents.service';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-document',
   templateUrl: './document.component.html',
   styleUrls: ['./document.component.css'],
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule],
 })
 export class DocumentComponent implements OnInit {
   posts: any[] = [];
   errorMsg: string | null = null;
   isLoading = false; // Add loading state
-  // pb = new PocketBase('http://127.0.0.1:8090'); // Remove local PB instance
+  pageTitle: string = 'Document Library'; // Add property for dynamic title
 
   // For the image modal
   showModal = false;
@@ -24,6 +23,11 @@ export class DocumentComponent implements OnInit {
   // For the message modal
   showMessageModal = false;
   selectedMessage = '';
+
+  // --- New for Details Modal ---
+  showDetailsModal = false;
+  selectedRequestDetails: any = null;
+  // --- End New ---
 
   // Delete Confirmation
   showDeleteModal = false;
@@ -34,7 +38,17 @@ export class DocumentComponent implements OnInit {
   private authService = inject(AuthService); // Inject AuthService if needed for filtering
 
   async ngOnInit(): Promise<void> {
+    this.setPageTitle(); // Set title based on role
     await this.loadDocuments();
+  }
+
+  setPageTitle(): void {
+    const user = this.authService.getUser();
+    if (user && user.role && user.role.toLowerCase() !== 'employee') {
+      this.pageTitle = 'Requests';
+    } else {
+      this.pageTitle = 'Document Library';
+    }
   }
 
   async loadDocuments() {
@@ -98,6 +112,37 @@ export class DocumentComponent implements OnInit {
     this.showMessageModal = false;
     this.selectedMessage = '';
   }
+
+  // --- New Details Modal Logic ---
+  async openDetailsModal(post: any) {
+    this.selectedRequestDetails = post; // Store the full post object
+    this.showDetailsModal = true;
+
+    // Mark as read if it's a forwarded request and currently unread
+    if (post.forwardedByEmail && post.requestId && !post.isRead) {
+      console.log(`Marking request ${post.requestId} as read.`);
+      try {
+        await this.documentsService.markRequestAsRead(post.requestId);
+        // Update local state immediately for better UX
+        const postIndex = this.posts.findIndex(p => p.id === post.id);
+        if (postIndex > -1) {
+          this.posts[postIndex].isRead = true;
+        }
+        // Optionally: Refresh the unread count in the navbar if needed
+        // (Requires communication back to navbar, e.g., via a shared service)
+      } catch (error) {
+        console.error(`Failed to mark request ${post.requestId} as read:`, error);
+        // Decide how to handle error - maybe show a message?
+      }
+    }
+  }
+
+  closeDetailsModal() {
+    this.showDetailsModal = false;
+    this.selectedRequestDetails = null;
+  }
+  // --- End New Details Modal Logic ---
+
 
   confirmDelete(post: any) {
     this.postToDelete = post;

@@ -3,7 +3,7 @@
     <!-- Page header with actions -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
       <div>
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Document Library</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">{{ pageTitle }}</h1> <!-- Use dynamic title -->
         <p class="text-gray-500 mt-1">Manage all your documents in one place</p>
       </div>
       <div class="flex gap-3 w-full sm:w-auto">
@@ -26,9 +26,9 @@
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
       <div class="flex flex-col md:flex-row gap-4">
         <div class="relative flex-grow">
-          <input 
-            type="text" 
-            placeholder="Search documents..." 
+          <input
+            type="text"
+            placeholder="Search documents..."
             class="pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <div class="absolute left-3 top-3 text-gray-400">
@@ -37,7 +37,7 @@
             </svg>
           </div>
         </div>
-        
+
         <div class="flex flex-wrap gap-3">
           <!-- Type filter -->
           <div class="relative">
@@ -53,7 +53,7 @@
               </svg>
             </div>
           </div>
-            
+
           <!-- Status filter -->
           <div class="relative">
             <select class="appearance-none pl-3 pr-10 py-2.5 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
@@ -68,7 +68,7 @@
               </svg>
             </div>
           </div>
-            
+
           <!-- Date filter -->
           <div class="relative">
             <select class="appearance-none pl-3 pr-10 py-2.5 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
@@ -201,7 +201,7 @@
                   </button>
                   <!-- Dropdown menu would be implemented with JS -->
                 </div>
-                
+
                 <!-- Desktop delete button -->
                 <button
                   (click)="confirmDelete(post)"
@@ -214,10 +214,10 @@
                 </button>
               </td>
             </tr>
-            
+
             <!-- Empty state -->
             <tr *ngIf="posts.length === 0">
-              <td colspan="8" class="py-8 text-center">
+              <td colspan="8" class="py-8 text-center"> <!-- Original colspan -->
                 <div class="flex flex-col items-center">
                   <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -230,7 +230,7 @@
           </tbody>
         </table>
       </div>
-      
+
       <!-- Pagination controls -->
       <div class="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-100">
         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
@@ -239,13 +239,13 @@
               Showing <span class="font-medium">1</span> to <span class="font-medium">{{ posts.length }}</span> of <span class="font-medium">{{ posts.length }}</span> documents
             </p>
           </div>
-          
+
           <!-- Load More Button -->
           <button class="border border-blue-500 text-blue-500 px-6 py-2 rounded hover:bg-blue-500 hover:text-white transition-colors text-sm">
             Load more
           </button>
         </div>
-        
+
         <!-- Mobile pagination -->
         <div class="flex sm:hidden justify-center w-full">
           <button class="border border-blue-500 text-blue-500 px-6 py-2 rounded hover:bg-blue-500 hover:text-white transition-colors w-full text-sm">
@@ -350,3 +350,6 @@
     </div>
   </div>
 </div>
+
+<!-- NEW DETAILS MODAL -->
+<!-- Removed the modal structure that was added previously -->

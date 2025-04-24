@@ -153,10 +153,27 @@ export class DocumentsService {
    */
   async createRequest(payload: any): Promise<any> {
      if (!this.authService.isLoggedIn || !this.authService.authStoreModel?.id) {
-       throw new Error('User is not authenticated or user ID is missing. Cannot create request.');
+       throw new Error('User is not authenticated or user details are missing. Cannot create request.');
      }
      const documentId = payload.document;
      const roleToSendTo = payload.sent_to;
+     // Get user model directly from authStore for potentially more complete data
+     const senderUserModel = this.authService.authStoreModel;
+
+     if (!senderUserModel || !senderUserModel.id) {
+        throw new Error('Sender details (ID) are missing from auth store.');
+     }
+     // Explicitly check for email in the model
+     const senderEmail = senderUserModel['email'];
+     if (!senderEmail) {
+         console.warn('Sender email not found directly in authStore model. This might indicate an issue with login/refresh storing the email.');
+         // As a fallback, you could try fetching the user record here, but it adds overhead.
+         // For now, let's throw an error or default to a placeholder if email is critical.
+         // throw new Error('Sender email could not be retrieved.');
+         // Or default:
+         // senderEmail = 'email-not-found@error.com';
+         throw new Error('Sender email could not be retrieved from authentication state.');
+     }
 
      if (!roleToSendTo || !documentId) {
         throw new Error("Payload must include 'sent_to' (role name) and 'document' (ID).");
@@ -165,12 +182,14 @@ export class DocumentsService {
      const finalPayload = {
         sent_to: roleToSendTo,
         document: documentId,
-        sent_by: this.authService.authStoreModel.id
+        sent_by: senderUserModel.id, // Use ID from model
+        senderEmail: senderEmail // Use retrieved email
      };
      this.ensureAuth();
 
      try {
        // 1. Create the request record
+       console.log('DocumentsService: Creating request. Sender email from authService:', senderEmail); // Corrected variable name
        console.log('DocumentsService: Creating request with payload:', finalPayload);
        const requestRecord = await this.pb.collection(this.requestCollection).create(finalPayload);
        console.log('DocumentsService: Request created successfully:', requestRecord);
@@ -225,8 +244,7 @@ export class DocumentsService {
 
   /**
    * Fetches documents accessible to the current user using the revised alternative strategy:
-   * Now relies primarily on the API rule using the 'forwardedToRoles' field.
-   * Still fetches sender info for display purposes.
+   * Fetches accessible documents via API rule, then fetches sender details separately.
    */
   async getAccessibleDocuments(userId: string, userRole: string, page: number = 1, perPage: number = 50): Promise<ListResult<any>> { // Specify <any>
     if (!userId) {
@@ -234,13 +252,13 @@ export class DocumentsService {
     }
     this.ensureAuth();
 
-    // The API rule now handles the core logic:
+    // The API rule handles the core logic:
     // uploadedBy = @request.auth.id || forwardedToRoles ~ @request.auth.role
     // We just need to fetch the documents and potentially the sender info.
 
     try {
       console.log(`DocumentsService: Fetching accessible documents for user ${userId} (Role: ${userRole}). Rule handles access.`);
-      // Fetch documents allowed by the API rule
+      // 1. Fetch documents allowed by the API rule
       const resultList = await this.pb.collection(this.documentCollection).getList(page, perPage, {
         // No client-side filter needed here as the API rule does the work
         sort: '-created',
@@ -248,45 +266,63 @@ export class DocumentsService {
       });
       console.log(`DocumentsService: Found ${resultList.totalItems} accessible documents via API rule.`);
 
-      // Fetch sender info for forwarded documents (optional but needed for display)
+      // 2. Prepare to fetch sender info for forwarded documents
+      // 2. Prepare to fetch sender info and read status for forwarded documents
       const docIds = resultList.items.map(doc => doc.id);
-      const forwardedSenderMap = new Map<string, string>();
+      const docInfoMap = new Map<string, { senderEmail: string, isRead: boolean, requestId: string }>(); // Map: docId -> { senderEmail, isRead, requestId }
 
-      if (docIds.length > 0) {
-          // Find the *latest* request record for each visible document to get the most recent sender
-          // (This assumes we only care about the last person who forwarded it to this role)
-          // A more complex approach would be needed to show *all* forwarders.
+      if (docIds.length > 0 && userRole) {
+          // Find the *latest* request record for each visible document to get details
           const requestFilter = docIds.map(id => `document = "${id}"`).join(' || ');
+          console.log(`DocumentsService: Fetching relevant requests matching filter: (${requestFilter}) && sent_to = "${userRole}"`);
           const requests = await this.pb.collection(this.requestCollection).getFullList({
-              filter: `(${requestFilter}) && sent_to = "${userRole}"`, // Ensure it was sent to this role
+              filter: `(${requestFilter}) && sent_to = "${userRole}"`,
               sort: '-created', // Get the latest request first for each document
-              expand: 'sent_by'
+              // Fetch necessary fields including the new isRead and the request ID
+              fields: 'id,document,senderEmail,isRead'
           });
+          console.log(`DocumentsService: Found ${requests.length} relevant request records.`);
 
-          // Populate map, ensuring only the latest sender for each doc ID is stored
+          // Populate map with sender email, read status, and request ID
           requests.forEach(req => {
               const docId = req['document'];
-              if (docId && !forwardedSenderMap.has(docId)) { // Only store the first (latest) sender found
-                  forwardedSenderMap.set(docId, req.expand?.['sent_by']?.email || 'Unknown Sender');
+              const senderEmail = req['senderEmail'] || 'Unknown Sender'; // Default if missing
+              const isRead = req['isRead'] || false; // Default if missing
+              const requestId = req['id'];
+
+              if (docId && !docInfoMap.has(docId)) { // Only store the first (latest) request info found
+                  docInfoMap.set(docId, { senderEmail, isRead, requestId });
               }
           });
+          console.log('DocumentsService: Populated docInfoMap:', docInfoMap); // Log the map
       }
 
-
-      // Augment the fetched documents with sender/uploader info
+      // 3. Augment the fetched documents with sender/uploader info and read status
       const augmentedItems = resultList.items.map(doc => {
         const uploaderEmail = doc.expand?.['uploadedBy']?.email || 'Unknown Uploader';
         let forwardedByEmail: string | undefined = undefined;
+        let isRead = false; // Default read status
+        let requestId: string | undefined = undefined; // Request ID for marking as read
 
-        // If the current user didn't upload it, check if we found a sender for it
-        if (doc['uploadedBy'] !== userId && forwardedSenderMap.has(doc.id)) {
-          forwardedByEmail = forwardedSenderMap.get(doc.id);
+        // If the current user didn't upload it, look up the sender info from the map
+        if (doc['uploadedBy'] !== userId) {
+            const requestInfo = docInfoMap.get(doc.id);
+            if (requestInfo) {
+                forwardedByEmail = requestInfo.senderEmail;
+                isRead = requestInfo.isRead;
+                requestId = requestInfo.requestId;
+            } else {
+                // If no corresponding request found (shouldn't happen often with correct logic/rules)
+                forwardedByEmail = 'Unknown Sender';
+            }
         }
 
         return {
           ...doc,
           uploaderEmail: uploaderEmail,
-          forwardedByEmail: forwardedByEmail
+           forwardedByEmail: forwardedByEmail,
+           isRead: isRead, // Add read status
+           requestId: requestId // Add request ID
         };
       });
 
@@ -299,5 +335,52 @@ export class DocumentsService {
       throw error; // Re-throw the error
     }
   } // End of getAccessibleDocuments method
+
+  /**
+   * Gets the count of unread requests for a specific role.
+   */
+  async getUnreadRequestsCount(userRole: string): Promise<number> {
+    if (!userRole) {
+      console.warn("Cannot get unread count without a user role.");
+      return 0;
+    }
+    this.ensureAuth(); // Ensure authenticated if rule requires it
+
+    try {
+      // Use getList with limit=1 and totalItems to efficiently get the count
+      const result = await this.pb.collection(this.requestCollection).getList(1, 1, {
+        filter: `sent_to = "${userRole}" && isRead = false`,
+        // We only need the count, so no need for fields or expand
+        // '$autoCancel': false // Consider if needed for potential background updates
+      });
+      console.log(`DocumentsService: Found ${result.totalItems} unread requests for role ${userRole}.`);
+      return result.totalItems;
+    } catch (error: any) {
+      console.error(`DocumentsService: Error fetching unread request count for role ${userRole}:`, error);
+      return 0; // Return 0 on error
+    }
+  }
+
+  /**
+   * Marks a specific request record as read.
+   */
+  async markRequestAsRead(requestId: string): Promise<any> {
+    if (!requestId) {
+      throw new Error("Request ID is required to mark as read.");
+    }
+    this.ensureAuth(); // Ensure user is logged in
+
+    try {
+      console.log(`DocumentsService: Marking request ${requestId} as read...`);
+      const updatedRecord = await this.pb.collection(this.requestCollection).update(requestId, {
+        isRead: true
+      });
+      console.log(`DocumentsService: Request ${requestId} marked as read.`);
+      return updatedRecord;
+    } catch (error: any) {
+      console.error(`DocumentsService: Error marking request ${requestId} as read:`, error);
+      throw error;
+    }
+  }
 
 } // End of class
