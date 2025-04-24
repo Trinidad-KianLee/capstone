@@ -40,14 +40,27 @@ export class DocumentComponent implements OnInit {
   async loadDocuments() {
     this.isLoading = true;
     this.errorMsg = null;
-    try {
-      // Use DocumentsService. Decide if this view should filter by user.
-      // Assuming this view shows ONLY the logged-in user's documents.
-      const filterByUser = true;
-      const resultList = await this.documentsService.getDocuments(1, 200, filterByUser); // Fetch up to 200, filtered by user
-      this.posts = resultList.items; // Get items from paginated result
-      console.log('Fetched user documents:', this.posts);
-    } catch (err: any) {
+     const user = this.authService.getUser(); // Get user details from AuthService
+
+     // Check for user and user ID. Role is handled by the service if missing.
+     if (!user || !user.id) {
+       this.errorMsg = 'User not logged in or user ID is missing.';
+       this.isLoading = false;
+       this.posts = []; // Clear posts if user is not valid
+      return;
+    }
+
+     // Get user role, assuming it exists on the user object (e.g., user.role)
+     // The service will handle cases where the role might be undefined/null.
+     const userRole = user.role || ''; // Default to empty string if role is not present
+
+     try {
+       // Use the updated getAccessibleDocuments method with user ID and role
+       console.log(`Fetching accessible documents for user ${user.id} (Role: ${userRole || 'None'})`);
+       const resultList = await this.documentsService.getAccessibleDocuments(user.id, userRole, 1, 200); // Pass ID and Role
+       this.posts = resultList.items; // Get items from paginated result
+       console.log('Fetched accessible documents:', this.posts);
+     } catch (err: any) {
       console.error('Error fetching documents:', err);
       this.errorMsg = `Failed to load documents: ${err.message || 'Unknown error'}`;
     } finally {

@@ -123,9 +123,18 @@
             <tr *ngFor="let post of posts" class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
               <td class="py-3 px-4">
                 <div class="font-medium text-gray-800">{{ post.document }}</div>
+                <!-- Display Uploader or Forwarder -->
+                <div class="text-xs text-gray-500 mt-0.5">
+                  <span *ngIf="post.forwardedByEmail">
+                    Forwarded by: {{ post.forwardedByEmail }}
+                  </span>
+                  <span *ngIf="!post.forwardedByEmail">
+                    Uploaded by: {{ post.uploaderEmail }}
+                  </span>
+                </div>
                 <!-- Show mobile-only info for smaller screens -->
                 <div class="md:hidden mt-1">
-                  <span class="inline-block px-2 py-1 text-xs rounded-full" 
+                  <span class="inline-block px-2 py-1 text-xs rounded-full"
                         [ngClass]="{
                           'bg-yellow-100 text-yellow-700': post.status === 'Pending',
                           'bg-green-100 text-green-700': post.status === 'Approved',

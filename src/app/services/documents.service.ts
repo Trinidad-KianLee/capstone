@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import PocketBase from 'pocketbase';
+import PocketBase, { ListResult } from 'pocketbase'; // Import ListResult type
 import { AuthService } from './auth/auth.service'; // Import AuthService
 
 @Injectable({
@@ -8,15 +8,12 @@ import { AuthService } from './auth/auth.service'; // Import AuthService
 export class DocumentsService {
   private pb: PocketBase;
   private documentCollection = 'document';
-  private requestCollection = 'request'; // Use singular based on existing forwardDocument
+  private requestCollection = 'request';
 
-  // Inject AuthService to handle authentication state
   constructor(private authService: AuthService) {
-    // Initialize PocketBase instance - ensure URL matches AuthService
     this.pb = new PocketBase('http://127.0.0.1:8090');
   }
 
-  // Helper to ensure the PB instance in this service uses the current auth token
   private ensureAuth(): void {
     const serviceToken = this.pb.authStore.token;
     const authServiceToken = this.authService.authStoreToken;
@@ -38,52 +35,46 @@ export class DocumentsService {
 
   // --- Document Methods ---
 
-  /**
-   * Creates a document record, potentially including a file attachment.
-   * Adapted from PostService.createDocumentRecord
-   */
   async createDocumentWithAttachment(documentTitle: string, documentType: string, file: File, additionalData: any = {}): Promise<any> {
-    if (!this.authService.isLoggedIn) {
-      throw new Error('User is not authenticated. Cannot create document.');
+    if (!this.authService.isLoggedIn || !this.authService.authStoreModel?.id) {
+      throw new Error('User is not authenticated or user ID is missing.');
     }
     if (!documentTitle) {
       throw new Error('Document title is required.');
     }
-    this.ensureAuth(); // Ensure PB instance is authenticated
+    this.ensureAuth();
 
     const formData = new FormData();
-    formData.append('document', documentTitle); // Assuming 'document' field holds the title
+    formData.append('document', documentTitle);
     formData.append('type', documentType || '');
-    formData.append('uploadedBy', this.authService.authStoreModel!.id); // Use ID from authService model
+    formData.append('uploadedBy', this.authService.authStoreModel.id);
     formData.append('attachment', file);
 
-    // Append any other provided data
+    // Append any other provided data, ensure forwardedToRoles starts empty or with a delimiter
+    additionalData.forwardedToRoles = additionalData.forwardedToRoles || ','; // Initialize if needed
     for (const key in additionalData) {
       if (additionalData.hasOwnProperty(key)) {
         formData.append(key, additionalData[key]);
       }
     }
 
+
     try {
       console.log('DocumentsService: Creating document with attachment...');
       const record = await this.pb.collection(this.documentCollection).create(formData);
       console.log('DocumentsService: Document created successfully:', record);
       return record;
-    } catch (error) {
+    } catch (error: any) { // Corrected
       console.error('DocumentsService: Error creating document:', error);
       throw error;
     }
   }
 
-  /**
-   * Fetches documents, optionally filtered by the current user.
-   * Combines logic from PostService.getPosts and PostService.getUserDocuments
-   */
-  async getDocuments(page: number = 1, perPage: number = 50, filterByUser: boolean = false): Promise<any> {
-     if (filterByUser && !this.authService.isLoggedIn) {
-       throw new Error('User is not authenticated. Cannot fetch user-specific documents.');
+  async getDocuments(page: number = 1, perPage: number = 50, filterByUser: boolean = false): Promise<ListResult<any>> { // Specify <any>
+     if (filterByUser && (!this.authService.isLoggedIn || !this.authService.authStoreModel?.id)) {
+       throw new Error('User is not authenticated or user ID is missing.');
      }
-     this.ensureAuth(); // Needed if filtering by user or if collection rules require auth
+     this.ensureAuth();
 
      let filter = '';
      if (filterByUser) {
@@ -93,46 +84,38 @@ export class DocumentsService {
 
      try {
        console.log(`DocumentsService: Fetching documents (page: ${page}, perPage: ${perPage}, filterByUser: ${filterByUser})...`);
-       // Use getList for pagination support
        const resultList = await this.pb.collection(this.documentCollection).getList(page, perPage, {
-         filter: filter || undefined, // Pass undefined if filter is empty
-         sort: '-created', // Example sort, adjust as needed
-         // requestKey: null // Disable client-side caching if needed
+         filter: filter || undefined,
+         sort: '-created',
+         expand: 'uploadedBy' // Expand uploader here too for consistency
        });
        console.log('DocumentsService: Documents fetched successfully:', resultList);
-       return resultList; // Returns the paginated result object { page, perPage, totalItems, totalPages, items }
-     } catch (error) {
+       return resultList;
+     } catch (error: any) { // Corrected
        console.error('DocumentsService: Error fetching documents:', error);
        throw error;
      }
   }
 
-  /**
-   * Fetch one document record by ID from PocketBase.
-   * (Existing method, ensureAuth added if needed by rules)
-   */
   async getDocumentById(documentId: string): Promise<any> {
-    // Add ensureAuth if viewing a single document requires login
-    // this.ensureAuth();
+    // Consider adding ensureAuth() if viewing requires login based on rules
     try {
       console.log(`DocumentsService: Fetching document by ID: ${documentId}...`);
-      const record = await this.pb.collection(this.documentCollection).getOne(documentId);
+      const record = await this.pb.collection(this.documentCollection).getOne(documentId, {
+          expand: 'uploadedBy' // Optionally expand uploader here too
+      });
       console.log('DocumentsService: Document fetched successfully:', record);
       return record;
-    } catch (error) {
+    } catch (error: any) { // Corrected
       console.error(`DocumentsService: Error fetching document ${documentId}:`, error);
       throw error;
     }
   }
 
-  /**
-   * Updates a document record by ID. Can handle FormData for attachments.
-   */
   async updateDocument(documentId: string, data: any | FormData): Promise<any> {
     if (!this.authService.isLoggedIn) {
        throw new Error('User is not authenticated. Cannot update document.');
     }
-    // Add additional checks if only the uploader or admin can update
     this.ensureAuth();
 
     try {
@@ -140,21 +123,16 @@ export class DocumentsService {
       const updatedRecord = await this.pb.collection(this.documentCollection).update(documentId, data);
       console.log(`DocumentsService: Document ${documentId} updated successfully.`, updatedRecord);
       return updatedRecord;
-    } catch (error) {
+    } catch (error: any) { // Corrected
       console.error(`DocumentsService: Error updating document ${documentId}:`, error);
       throw error;
     }
   }
 
-  /**
-   * Deletes a document record by ID.
-   * Adapted from PostService.deletePost
-   */
   async deleteDocument(documentId: string): Promise<boolean> {
     if (!this.authService.isLoggedIn) {
        throw new Error('User is not authenticated. Cannot delete document.');
     }
-    // Add additional checks if only the uploader or admin can delete
     this.ensureAuth();
 
     try {
@@ -162,7 +140,7 @@ export class DocumentsService {
       await this.pb.collection(this.documentCollection).delete(documentId);
       console.log(`DocumentsService: Document ${documentId} deleted successfully.`);
       return true;
-    } catch (error) {
+    } catch (error: any) { // Corrected
       console.error(`DocumentsService: Error deleting document ${documentId}:`, error);
       throw error;
     }
@@ -171,55 +149,155 @@ export class DocumentsService {
   // --- Request Methods ---
 
   /**
-   * Creates a record in the 'request' collection.
-   * Renamed from forwardDocument for clarity, takes payload.
-   * Adapted from PostService.createRequest and existing forwardDocument
+   * Creates a request record and updates the related document's forwardedToRoles field.
    */
   async createRequest(payload: any): Promise<any> {
-     if (!this.authService.isLoggedIn) {
-       throw new Error('User is not authenticated. Cannot create request.');
+     if (!this.authService.isLoggedIn || !this.authService.authStoreModel?.id) {
+       throw new Error('User is not authenticated or user ID is missing. Cannot create request.');
      }
-     // Add sender ID if not already in payload
-     if (!payload.sent_by) {
-        payload.sent_by = this.authService.authStoreModel!.id;
+     const documentId = payload.document;
+     const roleToSendTo = payload.sent_to;
+
+     if (!roleToSendTo || !documentId) {
+        throw new Error("Payload must include 'sent_to' (role name) and 'document' (ID).");
      }
+
+     const finalPayload = {
+        sent_to: roleToSendTo,
+        document: documentId,
+        sent_by: this.authService.authStoreModel.id
+     };
      this.ensureAuth();
 
      try {
-       console.log('DocumentsService: Creating request...');
-       const record = await this.pb.collection(this.requestCollection).create(payload);
-       console.log('DocumentsService: Request created successfully:', record);
-       return record;
-     } catch (error) {
+       // 1. Create the request record
+       console.log('DocumentsService: Creating request with payload:', finalPayload);
+       const requestRecord = await this.pb.collection(this.requestCollection).create(finalPayload);
+       console.log('DocumentsService: Request created successfully:', requestRecord);
+
+       // 2. Update the document record's forwardedToRoles
+       try {
+         const docToUpdate = await this.pb.collection(this.documentCollection).getOne(documentId);
+         let currentRoles = docToUpdate['forwardedToRoles'] || ','; // Default to comma if empty/null
+         const roleString = `,${roleToSendTo},`; // Format role with delimiters
+
+         // Append role only if not already present
+         if (!currentRoles.includes(roleString)) {
+            const updatedRoles = currentRoles + roleToSendTo + ',';
+            await this.pb.collection(this.documentCollection).update(documentId, {
+              forwardedToRoles: updatedRoles
+            });
+            console.log(`DocumentsService: Updated document ${documentId} forwardedToRoles to: ${updatedRoles}`);
+         } else {
+            console.log(`DocumentsService: Role ${roleToSendTo} already present in forwardedToRoles for document ${documentId}.`);
+         }
+       } catch (docUpdateError: any) {
+          // Log the error but don't fail the whole operation if document update fails
+          console.error(`DocumentsService: Failed to update forwardedToRoles for document ${documentId}:`, docUpdateError);
+          // Optionally: Consider deleting the created requestRecord if consistency is critical
+       }
+
+       return requestRecord; // Return the created request record
+
+     } catch (error: any) { // Corrected
        console.error('DocumentsService: Error creating request:', error);
        throw error;
      }
   }
 
-  /**
-   * Fetches records from the 'request' collection.
-   * Adapted from PostService.getRequests
-   */
-  async getRequests(page: number = 1, perPage: number = 50, filterOptions: any = {}): Promise<any> {
-     // Add auth check if needed by collection rules
-     // if (!this.authService.isLoggedIn) { ... }
-     this.ensureAuth(); // Assuming requests might need auth to view
+  async getRequests(page: number = 1, perPage: number = 50, filterOptions: any = {}): Promise<ListResult<any>> { // Specify <any>
+     this.ensureAuth(); // Assuming requests might need auth to view based on new rules
 
      try {
        console.log(`DocumentsService: Fetching requests (page: ${page}, perPage: ${perPage})...`);
        const resultList = await this.pb.collection(this.requestCollection).getList(page, perPage, {
-          sort: '-created', // Example sort
-          filter: filterOptions.filter || undefined, // Allow passing filters
-          // requestKey: null
+          sort: '-created',
+          filter: filterOptions.filter || undefined,
+          expand: 'sent_by,document,document.uploadedBy' // Expand necessary relations
        });
        console.log('DocumentsService: Requests fetched successfully:', resultList);
        return resultList;
-     } catch (error) {
+     } catch (error: any) { // Corrected
        console.error('DocumentsService: Error fetching requests:', error);
        throw error;
      }
   }
 
-  // Note: createDocument without attachment is removed as createDocumentWithAttachment handles both cases (file is optional in FormData)
-  // If you need a specific method without FormData, it can be added back.
-}
+  /**
+   * Fetches documents accessible to the current user using the revised alternative strategy:
+   * Now relies primarily on the API rule using the 'forwardedToRoles' field.
+   * Still fetches sender info for display purposes.
+   */
+  async getAccessibleDocuments(userId: string, userRole: string, page: number = 1, perPage: number = 50): Promise<ListResult<any>> { // Specify <any>
+    if (!userId) {
+      throw new Error('User ID is required to fetch accessible documents.');
+    }
+    this.ensureAuth();
+
+    // The API rule now handles the core logic:
+    // uploadedBy = @request.auth.id || forwardedToRoles ~ @request.auth.role
+    // We just need to fetch the documents and potentially the sender info.
+
+    try {
+      console.log(`DocumentsService: Fetching accessible documents for user ${userId} (Role: ${userRole}). Rule handles access.`);
+      // Fetch documents allowed by the API rule
+      const resultList = await this.pb.collection(this.documentCollection).getList(page, perPage, {
+        // No client-side filter needed here as the API rule does the work
+        sort: '-created',
+        expand: 'uploadedBy' // Expand uploader
+      });
+      console.log(`DocumentsService: Found ${resultList.totalItems} accessible documents via API rule.`);
+
+      // Fetch sender info for forwarded documents (optional but needed for display)
+      const docIds = resultList.items.map(doc => doc.id);
+      const forwardedSenderMap = new Map<string, string>();
+
+      if (docIds.length > 0) {
+          // Find the *latest* request record for each visible document to get the most recent sender
+          // (This assumes we only care about the last person who forwarded it to this role)
+          // A more complex approach would be needed to show *all* forwarders.
+          const requestFilter = docIds.map(id => `document = "${id}"`).join(' || ');
+          const requests = await this.pb.collection(this.requestCollection).getFullList({
+              filter: `(${requestFilter}) && sent_to = "${userRole}"`, // Ensure it was sent to this role
+              sort: '-created', // Get the latest request first for each document
+              expand: 'sent_by'
+          });
+
+          // Populate map, ensuring only the latest sender for each doc ID is stored
+          requests.forEach(req => {
+              const docId = req['document'];
+              if (docId && !forwardedSenderMap.has(docId)) { // Only store the first (latest) sender found
+                  forwardedSenderMap.set(docId, req.expand?.['sent_by']?.email || 'Unknown Sender');
+              }
+          });
+      }
+
+
+      // Augment the fetched documents with sender/uploader info
+      const augmentedItems = resultList.items.map(doc => {
+        const uploaderEmail = doc.expand?.['uploadedBy']?.email || 'Unknown Uploader';
+        let forwardedByEmail: string | undefined = undefined;
+
+        // If the current user didn't upload it, check if we found a sender for it
+        if (doc['uploadedBy'] !== userId && forwardedSenderMap.has(doc.id)) {
+          forwardedByEmail = forwardedSenderMap.get(doc.id);
+        }
+
+        return {
+          ...doc,
+          uploaderEmail: uploaderEmail,
+          forwardedByEmail: forwardedByEmail
+        };
+      });
+
+      console.log('DocumentsService: Accessible documents fetched and augmented successfully.');
+      // Return the original ListResult structure but with augmented items
+      return { ...resultList, items: augmentedItems };
+
+    } catch (error: any) { // Correctly defined catch block
+      console.error('DocumentsService: Error fetching accessible documents:', error);
+      throw error; // Re-throw the error
+    }
+  } // End of getAccessibleDocuments method
+
+} // End of class

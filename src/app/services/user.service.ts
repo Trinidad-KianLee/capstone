@@ -61,7 +61,8 @@ export class UserService {
       console.log('UserService: Fetching pending users...');
       const pendingUsers = await this.pb.collection(this.collection).getFullList({
         filter: 'status="pending"',
-        sort: '+created_at' // Assuming 'created_at' exists, otherwise use 'created'
+        sort: '+created_at', // Assuming 'created_at' exists, otherwise use 'created'
+        $autoCancel: false // Prevent auto-cancellation for this specific request
       });
       console.log('UserService: Pending users fetched successfully:', pendingUsers);
       return pendingUsers;
