@@ -115,25 +115,59 @@ export class DocumentComponent implements OnInit {
 
   // --- New Details Modal Logic ---
   async openDetailsModal(post: any) {
-    this.selectedRequestDetails = post; // Store the full post object
+    console.log('Opening details modal for post:', post);
+    
+    this.selectedRequestDetails = post;
     this.showDetailsModal = true;
 
-    // Mark as read if it's a forwarded request and currently unread
-    if (post.forwardedByEmail && post.requestId && !post.isRead) {
-      console.log(`Marking request ${post.requestId} as read.`);
+    // Mark all documents as read when viewed, not just forwarded ones
+    if (!post.isRead) {
       try {
-        await this.documentsService.markRequestAsRead(post.requestId);
+        // If it's a forwarded document with a requestId, use the standard method
+        if (post.forwardedByEmail && post.requestId) {
+          console.log(`Marking forwarded request ${post.requestId} as read`);
+          const result = await this.documentsService.markRequestAsRead(post.requestId);
+          console.log('Mark as read result:', result);
+        } 
+        // For documents without requestId, create a new request to mark as read
+        else if (post.forwardedToRoles && post.forwardedToRoles.includes(this.authService.getUser()?.role)) {
+          console.log(`Creating read request for document ${post.id}`);
+          
+          // Create a new request record for this document to mark it as read
+          const user = this.authService.getUser();
+          if (user && user.role) {
+            const requestPayload = {
+              document: post.id,
+              sent_to: user.role,
+              isRead: true
+            };
+            
+            try {
+              const newRequest = await this.documentsService.createRequest(requestPayload);
+              console.log('Created read request:', newRequest);
+              
+              // Update the local document with the new request info
+              post.requestId = newRequest.id;
+            } catch (error) {
+              console.error('Failed to create read request:', error);
+            }
+          }
+        }
+        
+        // Always update the UI to show as read
+        post.isRead = true;
+        
         // Update local state immediately for better UX
         const postIndex = this.posts.findIndex(p => p.id === post.id);
         if (postIndex > -1) {
+          console.log('Updating local post isRead status to true');
           this.posts[postIndex].isRead = true;
         }
-        // Optionally: Refresh the unread count in the navbar if needed
-        // (Requires communication back to navbar, e.g., via a shared service)
       } catch (error) {
-        console.error(`Failed to mark request ${post.requestId} as read:`, error);
-        // Decide how to handle error - maybe show a message?
+        console.error(`Failed to mark request as read:`, error);
       }
+    } else {
+      console.log('Document already marked as read');
     }
   }
 

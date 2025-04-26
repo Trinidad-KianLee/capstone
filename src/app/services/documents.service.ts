@@ -246,95 +246,92 @@ export class DocumentsService {
    * Fetches documents accessible to the current user using the revised alternative strategy:
    * Fetches accessible documents via API rule, then fetches sender details separately.
    */
-  async getAccessibleDocuments(userId: string, userRole: string, page: number = 1, perPage: number = 50): Promise<ListResult<any>> { // Specify <any>
+  async getAccessibleDocuments(userId: string, userRole: string, page: number = 1, perPage: number = 50): Promise<ListResult<any>> {
     if (!userId) {
       throw new Error('User ID is required to fetch accessible documents.');
     }
     this.ensureAuth();
 
-    // The API rule handles the core logic:
-    // uploadedBy = @request.auth.id || forwardedToRoles ~ @request.auth.role
-    // We just need to fetch the documents and potentially the sender info.
-
     try {
       console.log(`DocumentsService: Fetching accessible documents for user ${userId} (Role: ${userRole}). Rule handles access.`);
-      // 1. Fetch documents allowed by the API rule
       const resultList = await this.pb.collection(this.documentCollection).getList(page, perPage, {
-        // No client-side filter needed here as the API rule does the work
         sort: '-created',
-        expand: 'uploadedBy' // Expand uploader
+        expand: 'uploadedBy'
       });
       console.log(`DocumentsService: Found ${resultList.totalItems} accessible documents via API rule.`);
 
-      // 2. Prepare to fetch sender info for forwarded documents
-      // 2. Prepare to fetch sender info and read status for forwarded documents
       const docIds = resultList.items.map(doc => doc.id);
-      const docInfoMap = new Map<string, { senderEmail: string, isRead: boolean, requestId: string }>(); // Map: docId -> { senderEmail, isRead, requestId }
+      const docInfoMap = new Map<string, { senderEmail: string, isRead: boolean, requestId: string }>();
 
       if (docIds.length > 0 && userRole) {
-          // Find the *latest* request record for each visible document to get details
-          const requestFilter = docIds.map(id => `document = "${id}"`).join(' || ');
-          console.log(`DocumentsService: Fetching relevant requests matching filter: (${requestFilter}) && sent_to = "${userRole}"`);
-          const requests = await this.pb.collection(this.requestCollection).getFullList({
-              filter: `(${requestFilter}) && sent_to = "${userRole}"`,
-              sort: '-created', // Get the latest request first for each document
-              // Fetch necessary fields including the new isRead and the request ID
-              fields: 'id,document,senderEmail,isRead'
+        // Get ALL requests for these documents sent to the user's role to determine read status
+        const requestFilter = docIds.map(id => `document = "${id}"`).join(' || ');
+        
+        console.log(`DocumentsService: Fetching requests with filter: (${requestFilter}) && sent_to = "${userRole}"`);
+        
+        // Using getFullList to ensure we get all requests
+        const allRequests = await this.pb.collection(this.requestCollection).getFullList({
+          filter: `(${requestFilter}) && sent_to = "${userRole}"`,
+          fields: 'id,document,senderEmail,isRead'
+        });
+        
+        console.log(`DocumentsService: Found ${allRequests.length} requests for the current user's role`);
+        
+        // Group requests by document and get the most recent one for each document
+        const docRequestMap: Record<string, any[]> = {};
+        allRequests.forEach(req => {
+          const docId = req['document'];
+          if (!docId) return;
+          
+          if (!docRequestMap[docId]) {
+            docRequestMap[docId] = [];
+          }
+          docRequestMap[docId].push(req);
+        });
+        
+        // For each document, find if ANY request is marked as read
+        Object.entries(docRequestMap).forEach(([docId, requests]) => {
+          const isAnyRequestRead = requests.some(req => req['isRead'] === true);
+          const latestRequest = requests[0]; // Assuming sorted by -created
+          
+          docInfoMap.set(docId, {
+            senderEmail: latestRequest['senderEmail'] || 'Unknown Sender',
+            isRead: isAnyRequestRead,
+            requestId: latestRequest.id
           });
-          console.log(`DocumentsService: Found ${requests.length} relevant request records.`);
-
-          // Populate map with sender email, read status, and request ID
-          requests.forEach(req => {
-              const docId = req['document'];
-              const senderEmail = req['senderEmail'] || 'Unknown Sender'; // Default if missing
-              const isRead = req['isRead'] || false; // Default if missing
-              const requestId = req['id'];
-
-              if (docId && !docInfoMap.has(docId)) { // Only store the first (latest) request info found
-                  docInfoMap.set(docId, { senderEmail, isRead, requestId });
-              }
-          });
-          console.log('DocumentsService: Populated docInfoMap:', docInfoMap); // Log the map
+        });
       }
 
-      // 3. Augment the fetched documents with sender/uploader info and read status
+      // Augment documents with request information
       const augmentedItems = resultList.items.map(doc => {
-        const uploaderEmail = doc.expand?.['uploadedBy']?.email || 'Unknown Uploader';
-        let forwardedByEmail: string | undefined = undefined;
-        let isRead = false; // Default read status
-        let requestId: string | undefined = undefined; // Request ID for marking as read
-
-        // If the current user didn't upload it, look up the sender info from the map
-        if (doc['uploadedBy'] !== userId) {
-            const requestInfo = docInfoMap.get(doc.id);
-            if (requestInfo) {
-                forwardedByEmail = requestInfo.senderEmail;
-                isRead = requestInfo.isRead;
-                requestId = requestInfo.requestId;
-            } else {
-                // If no corresponding request found (shouldn't happen often with correct logic/rules)
-                forwardedByEmail = 'Unknown Sender';
-            }
-        }
+        const uploaderEmail = doc.expand?.['uploadedBy']?.['email'] || 'Unknown Uploader';
+        const requestInfo = docInfoMap.get(doc.id);
+        const hasForwardedRoles = doc['forwardedToRoles'] && 
+                                  userRole && 
+                                  doc['forwardedToRoles'].includes(userRole);
 
         return {
           ...doc,
-          uploaderEmail: uploaderEmail,
-           forwardedByEmail: forwardedByEmail,
-           isRead: isRead, // Add read status
-           requestId: requestId // Add request ID
+          uploaderEmail,
+          forwardedByEmail: requestInfo?.senderEmail,
+          isRead: requestInfo?.isRead || false,
+          requestId: requestInfo?.requestId,
+          isForwardedToCurrentUser: hasForwardedRoles
         };
       });
 
-      console.log('DocumentsService: Accessible documents fetched and augmented successfully.');
-      // Return the original ListResult structure but with augmented items
+      // Log only the IDs and read status to avoid type errors
+      augmentedItems.forEach(item => {
+        console.log(`Document ${item.id}: isRead = ${item.isRead}, requestId = ${item.requestId}`);
+      });
+
       return { ...resultList, items: augmentedItems };
 
-    } catch (error: any) { // Correctly defined catch block
+    } catch (error: any) {
       console.error('DocumentsService: Error fetching accessible documents:', error);
-      throw error; // Re-throw the error
+      throw error;
     }
-  } // End of getAccessibleDocuments method
+  }
 
   /**
    * Gets the count of unread requests for a specific role.
@@ -372,10 +369,11 @@ export class DocumentsService {
 
     try {
       console.log(`DocumentsService: Marking request ${requestId} as read...`);
+      // PocketBase requires explicit boolean true value
       const updatedRecord = await this.pb.collection(this.requestCollection).update(requestId, {
-        isRead: true
+        "isRead": true
       });
-      console.log(`DocumentsService: Request ${requestId} marked as read.`);
+      console.log(`DocumentsService: Request ${requestId} marked as read:`, updatedRecord);
       return updatedRecord;
     } catch (error: any) {
       console.error(`DocumentsService: Error marking request ${requestId} as read:`, error);
