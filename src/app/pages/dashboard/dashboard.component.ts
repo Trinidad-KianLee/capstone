@@ -36,9 +36,9 @@ export class DashboardComponent implements OnInit {
   editingDoc: any = null;
   selectedFile: File | null = null;
 
-  // NEW: Delete Confirmation
-  showDeleteModal = false;
-  docToDelete: any = null; // The doc the user intends to delete
+  // NEW: Archive Confirmation
+  showArchiveModal = false; // Renamed from showDeleteModal
+  docToArchive: any = null; // Renamed from docToDelete
 
   // Inject services
   private authService = inject(AuthService);
@@ -184,39 +184,39 @@ export class DashboardComponent implements OnInit {
   }
 
   // ----------------------------
-  // DELETE CONFIRMATION LOGIC
+  // ARCHIVE CONFIRMATION LOGIC
   // ----------------------------
-  confirmDeleteDocument(doc: any) {
-    // Open the modal and remember which doc to delete
-    this.docToDelete = doc;
-    this.showDeleteModal = true;
+  confirmArchiveDocument(doc: any) { // Renamed from confirmDeleteDocument
+    // Open the modal and remember which doc to archive
+    this.docToArchive = doc;
+    this.showArchiveModal = true;
   }
 
-  cancelDelete() {
-    // Close the modal without deleting
-    this.docToDelete = null;
-    this.showDeleteModal = false;
+  cancelArchive() { // Renamed from cancelDelete
+    // Close the modal without archiving
+    this.docToArchive = null;
+    this.showArchiveModal = false;
   }
 
-  confirmDelete() {
-    // Actually delete the doc
-    if (!this.docToDelete) return;
-    this.deleteDocument(this.docToDelete.id);
-    this.docToDelete = null;
-    this.showDeleteModal = false;
+  confirmArchive() { // Renamed from confirmDelete
+    // Actually archive the doc
+    if (!this.docToArchive) return;
+    this.archiveDocument(this.docToArchive.id);
+    this.docToArchive = null;
+    this.showArchiveModal = false;
   }
 
-  // Updated delete method using DocumentsService
-  async deleteDocument(docId: string) {
+  // Method to call the service (already correctly named)
+  async archiveDocument(docId: string) {
     this.isLoading = true;
     this.errorMessage = '';
     try {
-      await this.documentsService.deleteDocument(docId); // Use DocumentsService
+      await this.documentsService.archiveDocument(docId); // Use archiveDocument instead of deleteDocument
       // Update local array
       this.documents = this.documents.filter(d => d.id !== docId);
     } catch (err: any) {
-      console.error('Error deleting document:', err);
-      this.errorMessage = `Failed to delete document: ${err.message || 'Unknown error'}`;
+      console.error('Error archiving document:', err);
+      this.errorMessage = `Failed to archive document: ${err.message || 'Unknown error'}`;
     } finally {
       this.isLoading = false;
     }

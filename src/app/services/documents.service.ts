@@ -75,17 +75,27 @@ export class DocumentsService {
        throw new Error('User is not authenticated or user ID is missing.');
      }
      this.ensureAuth();
-
+     
+     // Get user role for consistent filtering
+     const userRole = this.authService.getUser()?.role;
+     
+     // Different approach for admin vs non-admin users, consistent with getAccessibleDocuments
      let filter = '';
+     if (userRole === 'admin') {
+       filter = 'isArchived != true'; // For admin users, we'll just exclude explicitly archived documents
+     } else {
+       filter = 'isArchived = false || isArchived = null'; // For non-admin users, ensure documents aren't archived
+     }
+     
      if (filterByUser) {
        const userId = this.authService.authStoreModel!.id;
-       filter = `uploadedBy = "${userId}"`;
+       filter += ` && uploadedBy = "${userId}"`;
      }
 
      try {
        console.log(`DocumentsService: Fetching documents (page: ${page}, perPage: ${perPage}, filterByUser: ${filterByUser})...`);
        const resultList = await this.pb.collection(this.documentCollection).getList(page, perPage, {
-         filter: filter || undefined,
+         filter: filter,
          sort: '-created',
          expand: 'uploadedBy' // Expand uploader here too for consistency
        });
@@ -142,6 +152,84 @@ export class DocumentsService {
       return true;
     } catch (error: any) { // Corrected
       console.error(`DocumentsService: Error deleting document ${documentId}:`, error);
+      throw error;
+    }
+  }
+
+  async archiveDocument(documentId: string): Promise<any> {
+    if (!this.authService.isLoggedIn) {
+       throw new Error('User is not authenticated. Cannot archive document.');
+    }
+    this.ensureAuth();
+
+    try {
+      console.log(`DocumentsService: Archiving document by ID: ${documentId}...`);
+      // Update the document to mark it as archived instead of deleting it
+      const updatedRecord = await this.pb.collection(this.documentCollection).update(documentId, {
+        isArchived: true,
+        archivedAt: new Date().toISOString(),
+        archivedBy: this.authService.authStoreModel?.id
+      });
+      console.log(`DocumentsService: Document ${documentId} archived successfully.`, updatedRecord);
+      return updatedRecord;
+    } catch (error: any) {
+      console.error(`DocumentsService: Error archiving document ${documentId}:`, error);
+      throw error;
+    }
+  }
+
+  async getArchivedDocuments(page: number = 1, perPage: number = 50): Promise<ListResult<any>> {
+    if (!this.authService.isLoggedIn) {
+      throw new Error('User is not authenticated. Cannot retrieve archived documents.');
+    }
+    
+    // Check if user has admin role
+    const userRole = this.authService.getUser()?.role;
+    if (userRole !== 'admin') {
+      throw new Error('Only admin users can access archived documents.');
+    }
+    
+    this.ensureAuth();
+
+    try {
+      console.log(`DocumentsService: Fetching archived documents (page: ${page}, perPage: ${perPage})...`);
+      const resultList = await this.pb.collection(this.documentCollection).getList(page, perPage, {
+        filter: 'isArchived = true',
+        sort: '-archivedAt',
+        expand: 'uploadedBy,archivedBy'
+      });
+      console.log('DocumentsService: Archived documents fetched successfully:', resultList);
+      return resultList;
+    } catch (error: any) {
+      console.error('DocumentsService: Error fetching archived documents:', error);
+      throw error;
+    }
+  }
+
+  async restoreDocument(documentId: string): Promise<any> {
+    if (!this.authService.isLoggedIn) {
+      throw new Error('User is not authenticated. Cannot restore document.');
+    }
+    
+    // Check if user has admin role
+    const userRole = this.authService.getUser()?.role;
+    if (userRole !== 'admin') {
+      throw new Error('Only admin users can restore archived documents.');
+    }
+    
+    this.ensureAuth();
+
+    try {
+      console.log(`DocumentsService: Restoring document by ID: ${documentId}...`);
+      const updatedRecord = await this.pb.collection(this.documentCollection).update(documentId, {
+        isArchived: false,
+        archivedAt: null,
+        archivedBy: null
+      });
+      console.log(`DocumentsService: Document ${documentId} restored successfully.`, updatedRecord);
+      return updatedRecord;
+    } catch (error: any) {
+      console.error(`DocumentsService: Error restoring document ${documentId}:`, error);
       throw error;
     }
   }
@@ -254,12 +342,27 @@ export class DocumentsService {
 
     try {
       console.log(`DocumentsService: Fetching accessible documents for user ${userId} (Role: ${userRole}). Rule handles access.`);
+      
+      // Different approach for admin vs non-admin users
+      let filterQuery = '';
+      
+      if (userRole === 'admin') {
+        // For admin users, we'll just exclude explicitly archived documents
+        filterQuery = 'isArchived != true';
+      } else {
+        // For non-admin users, ensure documents aren't archived
+        filterQuery = 'isArchived = false || isArchived = null';
+      }
+      
       const resultList = await this.pb.collection(this.documentCollection).getList(page, perPage, {
+        filter: filterQuery,
         sort: '-created',
         expand: 'uploadedBy'
       });
       console.log(`DocumentsService: Found ${resultList.totalItems} accessible documents via API rule.`);
 
+      // --- TEMPORARILY COMMENTED OUT FOR DEBUGGING ---
+      /*
       const docIds = resultList.items.map(doc => doc.id);
       const docInfoMap = new Map<string, { senderEmail: string, isRead: boolean, requestId: string }>();
 
@@ -326,6 +429,11 @@ export class DocumentsService {
       });
 
       return { ...resultList, items: augmentedItems };
+      */
+      // --- END TEMPORARY COMMENT ---
+
+      // Return the basic list for now
+      return resultList;
 
     } catch (error: any) {
       console.error('DocumentsService: Error fetching accessible documents:', error);

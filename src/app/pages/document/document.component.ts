@@ -190,21 +190,21 @@ export class DocumentComponent implements OnInit {
 
   async confirmDeleteYes() {
     if (!this.postToDelete) return;
-    await this.deleteDocument(this.postToDelete.id);
+    await this.archiveDocument(this.postToDelete.id);
     this.postToDelete = null;
     this.showDeleteModal = false;
   }
 
-  async deleteDocument(docId: string) {
-    this.isLoading = true; // Indicate loading during delete
+  async archiveDocument(docId: string) {
+    this.isLoading = true;
     this.errorMsg = null;
     try {
-      await this.documentsService.deleteDocument(docId); // Use DocumentsService
+      await this.documentsService.archiveDocument(docId); // Use archiveDocument instead of deleteDocument
       // Update local array
       this.posts = this.posts.filter(d => d.id !== docId);
     } catch (err: any) {
-      console.error('Error deleting document:', err);
-      this.errorMsg = `Failed to delete document: ${err.message || 'Unknown error'}`;
+      console.error('Error archiving document:', err);
+      this.errorMsg = `Failed to archive document: ${err.message || 'Unknown error'}`;
     } finally {
       this.isLoading = false;
     }

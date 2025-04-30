@@ -22,7 +22,22 @@
           routerLinkActive="text-blue-600 border-b-2 border-blue-600"
           [routerLinkActiveOptions]="{exact: true}"
           class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-150">
-          {{ nav.name }}
+          {{ nav.name === 'Documents' ? documentLabel : nav.name }}
+        </a>
+        
+        <!-- Archive link for admin users only -->
+        <a
+          *ngIf="isAdmin"
+          routerLink="/archive"
+          routerLinkActive="text-blue-600 border-b-2 border-blue-600"
+          [routerLinkActiveOptions]="{exact: true}"
+          class="inline-flex items-center px-1 pt-1 text-sm font-medium text-amber-600 hover:text-amber-800 transition-colors duration-150">
+          <span class="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+            Archive
+          </span>
         </a>
       </div>
 
@@ -114,7 +129,23 @@
          [routerLinkActiveOptions]="{exact: true}"
          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
          (click)="isMenuOpen = false">
-         {{ nav.name }}
+         {{ nav.name === 'Documents' ? documentLabel : nav.name }}
+       </a>
+       
+       <!-- Archive link for admin users only -->
+       <a
+         *ngIf="isAdmin"
+         routerLink="/archive"
+         routerLinkActive="bg-blue-50 text-amber-600"
+         [routerLinkActiveOptions]="{exact: true}"
+         class="block px-3 py-2 rounded-md text-base font-medium text-amber-600 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+         (click)="isMenuOpen = false">
+         <span class="flex items-center gap-2">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+           </svg>
+           Archive
+         </span>
        </a>
     </div>
 

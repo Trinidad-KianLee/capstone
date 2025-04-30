@@ -24,13 +24,16 @@ export class NavbarComponent implements OnInit { // Implement OnInit
   private authService = inject(AuthService);
   private documentsService = inject(DocumentsService);
 
-  // Use original navigationItems array
+  // Use original navigationItems array, archive page will be added conditionally in HTML
   navigationItems = [
     { name: 'Dashboard', route: '/dashboard' },
     { name: 'Documents', route: '/document' }, // Keep original label here, template handles dynamic display
     { name: 'Activities', route: '/activities' },
     { name: 'Tasks', route: '/task' }
   ];
+
+  // New property to check if user is admin
+  isAdmin = false;
 
   constructor() {
     // Initial check
@@ -52,8 +55,10 @@ export class NavbarComponent implements OnInit { // Implement OnInit
     if (this.loggedInUser$) {
       const userRole = this.loggedInUser$.role;
       this.documentLabel = (userRole && userRole.toLowerCase() !== 'employee') ? 'Requests' : 'Documents';
+      this.isAdmin = userRole === 'admin'; // Set admin flag based on role
     } else {
       this.documentLabel = 'Documents'; // Default if not logged in
+      this.isAdmin = false; // Not admin if not logged in
     }
   }
 
