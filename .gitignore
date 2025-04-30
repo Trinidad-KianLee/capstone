@@ -47,3 +47,4 @@ Thumbs.db
 # PocketBase data
 /pb_data/
 /pb_migrations/
+/db/
