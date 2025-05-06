@@ -2,12 +2,12 @@
   "name": "my-ojt",
   "version": "0.0.0",
   "scripts": {
-  "ng": "ng",
-  "start": "ng serve --host 0.0.0.0 --port 9000",
-  "build": "ng build",
-  "watch": "ng build --watch --configuration development",
-  "test": "ng test"
-},
+    "ng": "ng",
+    "start": "ng serve --host 0.0.0.0 --port 9000",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "^19.0.0",
@@ -19,6 +19,7 @@
     "@angular/platform-browser-dynamic": "^19.0.0",
     "@angular/router": "^19.0.0",
     "@tailwindcss/postcss": "^4.0.12",
+    "ngx-image-cropper": "^9.1.5",
     "pocketbase": "^0.25.1",
     "postcss": "^8.5.3",
     "rxjs": "~7.8.0",

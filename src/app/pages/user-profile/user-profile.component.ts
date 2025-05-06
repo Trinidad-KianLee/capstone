@@ -17,7 +17,8 @@ export class UserProfileComponent implements OnInit {
   successMessage = signal<string | null>(null);
   selectedFile: File | null = null;
   imagePreview: string | ArrayBuffer | null = null;
-
+  cropperVisible = signal<boolean>(false);
+  
   private authService = inject(AuthService);
   private router = inject(Router);
 
@@ -38,14 +39,35 @@ export class UserProfileComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
-
-      // Show image preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result;
-      };
-      reader.readAsDataURL(this.selectedFile);
+      this.readAndPreviewImage();
+      this.cropperVisible.set(true);
     }
+  }
+
+  readAndPreviewImage(): void {
+    if (!this.selectedFile) return;
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreview = reader.result;
+    };
+    reader.readAsDataURL(this.selectedFile);
+  }
+
+  closeCropper(): void {
+    this.cropperVisible.set(false);
+    // Keep the file and preview for uploading
+  }
+
+  saveCroppedImage(): void {
+    this.cropperVisible.set(false);
+    // We're not doing actual cropping, but we're keeping the selected image
+  }
+
+  cancelUpload(): void {
+    this.selectedFile = null;
+    this.imagePreview = null;
+    this.cropperVisible.set(false);
   }
 
   async uploadProfileImage(): Promise<void> {
@@ -75,6 +97,7 @@ export class UserProfileComponent implements OnInit {
         
         // Clear selected file and preview
         this.selectedFile = null;
+        this.imagePreview = null;
         
         // Auto-hide success message after 3 seconds
         setTimeout(() => {
@@ -87,11 +110,6 @@ export class UserProfileComponent implements OnInit {
     } finally {
       this.isLoading.set(false);
     }
-  }
-
-  cancelUpload(): void {
-    this.selectedFile = null;
-    this.imagePreview = null;
   }
 
   // Helper function to format role for display
