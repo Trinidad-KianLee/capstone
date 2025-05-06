@@ -10,6 +10,7 @@ import { RegisterAccountComponent } from './pages/register-account/register-acco
 import { ItDepartmentComponent } from './pages/it-department/it-department.component';
 import { RequestFormComponent } from './pages/request-form/request-form.component';
 import { ArchiveComponent } from './pages/archive/archive.component'; // Import Archive Component
+import { UserProfileComponent } from './pages/user-profile/user-profile.component'; // Import User Profile Component
 
 // Admin role guard function
 const adminGuard = () => {
@@ -39,6 +40,7 @@ export const routes: Routes = [
   { path: 'it-department', component: ItDepartmentComponent, canActivate: [authGuard] },
   { path: 'request-form', component: RequestFormComponent, canActivate: [authGuard] },
   { path: 'archive', component: ArchiveComponent, canActivate: [authGuard], canMatch: [adminGuard] }, // Archive route with admin guard
+  { path: 'user-profile', component: UserProfileComponent, canActivate: [authGuard] }, // User profile route
 
   { path: '**', redirectTo: '/login' }
 ];

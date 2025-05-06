@@ -1,0 +1,150 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Header with background -->
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-32 flex items-center px-6">
+      <h1 class="text-2xl font-bold text-white">Profile Settings</h1>
+    </div>
+
+    <!-- User profile content -->
+    <div class="p-6">
+      <!-- Loading and error states -->
+      <div *ngIf="isLoading()" class="flex justify-center my-4">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+      
+      <div *ngIf="errorMessage()" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        {{ errorMessage() }}
+      </div>
+      
+      <div *ngIf="successMessage()" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        {{ successMessage() }}
+      </div>
+
+      <div *ngIf="user() && !isLoading()" class="grid md:grid-cols-3 gap-8">
+        <!-- Left Column: Avatar Upload -->
+        <div class="md:col-span-1">
+          <div class="flex flex-col items-center space-y-4">
+            <!-- Current Avatar -->
+            <div class="relative rounded-full overflow-hidden w-40 h-40 bg-gray-100 border">
+              <img 
+                *ngIf="!imagePreview && user().avatar" 
+                [src]="'http://127.0.0.1:8090/api/files/_pb_users_auth_/' + user().id + '/' + user().avatar" 
+                alt="Profile Picture" 
+                class="w-full h-full object-cover"
+              />
+              <img 
+                *ngIf="imagePreview" 
+                [src]="imagePreview" 
+                alt="Profile Picture Preview" 
+                class="w-full h-full object-cover"
+              />
+              <div 
+                *ngIf="!user().avatar && !imagePreview" 
+                class="flex items-center justify-center w-full h-full bg-gray-100 text-gray-400"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Upload Controls -->
+            <div class="w-full">
+              <!-- Upload Button -->
+              <label *ngIf="!selectedFile" class="w-full flex flex-col items-center px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg tracking-wide uppercase cursor-pointer hover:bg-blue-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"></path>
+                </svg>
+                <span class="mt-2 text-sm">Select profile image</span>
+                <input type="file" class="hidden" accept="image/*" (change)="onFileSelected($event)">
+              </label>
+              
+              <!-- Action Buttons when image selected -->
+              <div *ngIf="selectedFile" class="flex justify-between gap-2">
+                <button 
+                  (click)="uploadProfileImage()" 
+                  class="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
+                  [disabled]="isLoading()"
+                >
+                  <span *ngIf="!isLoading()">Upload</span>
+                  <span *ngIf="isLoading()">Uploading...</span>
+                </button>
+                <button 
+                  (click)="cancelUpload()" 
+                  class="flex-1 py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:bg-gray-300"
+                  [disabled]="isLoading()"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+            
+            <p class="text-xs text-gray-500">
+              Allowed formats: JPG, PNG, WEBP<br>
+              Maximum size: 5MB
+            </p>
+          </div>
+        </div>
+
+        <!-- Right Column: User Information -->
+        <div class="md:col-span-2">
+          <h2 class="text-xl font-bold mb-6 text-gray-800">Account Information</h2>
+          
+          <div class="space-y-6">
+            <!-- Name -->
+            <div>
+              <h3 class="text-gray-600 text-sm font-medium mb-2">Full Name</h3>
+              <div class="bg-gray-100 p-3 rounded-md text-gray-800">
+                {{ user().first_name }} {{ user().last_name }}
+              </div>
+            </div>
+            
+            <!-- Email -->
+            <div>
+              <h3 class="text-gray-600 text-sm font-medium mb-2">Email Address</h3>
+              <div class="bg-gray-100 p-3 rounded-md text-gray-800">
+                {{ user().email }}
+              </div>
+            </div>
+
+            <!-- Role -->
+            <div>
+              <h3 class="text-gray-600 text-sm font-medium mb-2">Role</h3>
+              <div class="bg-gray-100 p-3 rounded-md text-gray-800">
+                {{ formatRole(user().role) }}
+              </div>
+            </div>
+            
+            <!-- Account Status -->
+            <div>
+              <h3 class="text-gray-600 text-sm font-medium mb-2">Account Status</h3>
+              <div class="flex items-center">
+                <span 
+                  [ngClass]="{
+                    'bg-green-100 text-green-800': user().status === 'approved',
+                    'bg-yellow-100 text-yellow-800': user().status === 'pending',
+                    'bg-red-100 text-red-800': user().status === 'denied' || user().status === 'disabled'
+                  }"
+                  class="px-3 py-1 rounded-full text-xs font-medium"
+                >
+                  {{ user().status === 'approved' ? 'Active' : (user().status || 'Unknown') | titlecase }}
+                </span>
+                <span *ngIf="user().verified" class="ml-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
+                  Verified
+                </span>
+              </div>
+            </div>
+
+            <!-- Account Created -->
+            <div>
+              <h3 class="text-gray-600 text-sm font-medium mb-2">Account Created</h3>
+              <div class="bg-gray-100 p-3 rounded-md text-gray-800">
+                {{ user().created_at | date:'medium' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
