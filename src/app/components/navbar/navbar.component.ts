@@ -1,6 +1,6 @@
 import { Component, Output, EventEmitter, OnInit, inject } from '@angular/core'; // Import OnInit, inject
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
 import { DocumentsService } from '../../services/documents.service'; // Import DocumentsService
 
@@ -19,10 +19,12 @@ export class NavbarComponent implements OnInit { // Implement OnInit
   loggedInUser$: any = null;
   documentLabel: string = 'Documents';
   unreadRequestsCount: number = 0; // Property for the badge count
+  showProfileModal = false; // New property to control profile modal visibility
 
   // Inject services using inject()
   private authService = inject(AuthService);
   private documentsService = inject(DocumentsService);
+  private router = inject(Router); // Inject the router
 
   // Use original navigationItems array, archive page will be added conditionally in HTML
   navigationItems = [
@@ -81,11 +83,49 @@ export class NavbarComponent implements OnInit { // Implement OnInit
     this.isMenuOpen = !this.isMenuOpen;
   }
 
+  // New method to toggle profile modal
+  toggleProfileModal() {
+    this.showProfileModal = !this.showProfileModal;
+  }
+
+  // Close modal if clicked outside
+  closeProfileModalOnOutsideClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (target.classList.contains('modal-backdrop')) {
+      this.showProfileModal = false;
+    }
+  }
+
+  // Navigate to profile settings (placeholder for now)
+  goToSettings() {
+    this.showProfileModal = false;
+    this.router.navigate(['/user-profile']);
+  }
+
   onLogoutClick(): void {
     this.logoutClicked.emit();
     // Reset state on logout
     this.loggedInUser$ = null;
     this.documentLabel = 'Documents';
     this.unreadRequestsCount = 0;
+    this.showProfileModal = false;
+  }
+
+  // Helper method to get user's full name
+  get userFullName(): string {
+    if (this.loggedInUser$) {
+      return `${this.loggedInUser$.first_name || ''} ${this.loggedInUser$.last_name || ''}`.trim();
+    }
+    return 'User';
+  }
+
+  // Helper method to get user's email
+  get userEmail(): string {
+    return this.loggedInUser$?.email || '';
+  }
+
+  // Helper method to get user's role with nicer formatting
+  get userRole(): string {
+    return this.loggedInUser$?.role || 'User';
   }
 }

@@ -1,0 +1,59 @@
+/* Profile modal animations */
+.modal-backdrop {
+  transition: opacity 0.3s ease;
+}
+
+/* Smooth animation for the profile modal */
+.profile-modal-enter {
+  opacity: 0;
+}
+
+.profile-modal-enter-active {
+  opacity: 1;
+  transition: opacity 300ms;
+}
+
+.profile-modal-exit {
+  opacity: 1;
+}
+
+.profile-modal-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}
+
+/* User avatar styles */
+.avatar-container {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-container .status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: #10B981;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+/* Improve profile modal transition */
+.profile-slide-enter {
+  transform: translateX(100%);
+}
+
+.profile-slide-enter-active {
+  transform: translateX(0);
+  transition: transform 300ms ease-out;
+}
+
+.profile-slide-exit {
+  transform: translateX(0);
+}
+
+.profile-slide-exit-active {
+  transform: translateX(100%);
+  transition: transform 300ms ease-in;
+}
