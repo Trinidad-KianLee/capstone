@@ -1,6 +1,16 @@
-/* Profile modal animations */
+/* Profile modal animations and positioning */
 .modal-backdrop {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Modal positioning */
+.profile-modal {
+  position: absolute;
+  top: 70px;
+  right: 16px;
+  width: 280px;
+  transform-origin: top right;
 }
 
 /* Smooth animation for the profile modal */
@@ -56,4 +66,51 @@
 .profile-slide-exit-active {
   transform: translateX(100%);
   transition: transform 300ms ease-in;
+}
+
+/* Dark mode styles */
+:root.dark {
+  color-scheme: dark;
+}
+
+:root.dark nav {
+  background-color: #1F2937;
+  border-color: #374151;
+}
+
+:root.dark .bg-white {
+  background-color: #1F2937;
+}
+
+:root.dark .text-gray-800 {
+  color: #F3F4F6;
+}
+
+:root.dark .text-gray-700 {
+  color: #D1D5DB;
+}
+
+:root.dark .text-gray-600 {
+  color: #9CA3AF;
+}
+
+:root.dark .text-gray-500 {
+  color: #6B7280;
+}
+
+:root.dark .hover\:bg-gray-100:hover {
+  background-color: #374151;
+}
+
+:root.dark .border-gray-200 {
+  border-color: #374151;
+}
+
+:root.dark .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark mode toggle smooth transition */
+.theme-toggle-switch {
+  transition: all 0.2s ease;
 }

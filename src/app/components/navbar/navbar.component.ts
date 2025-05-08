@@ -20,6 +20,7 @@ export class NavbarComponent implements OnInit { // Implement OnInit
   documentLabel: string = 'Documents';
   unreadRequestsCount: number = 0; // Property for the badge count
   showProfileModal = false; // New property to control profile modal visibility
+  isDarkMode = false; // Add dark mode state
 
   // Inject services using inject()
   private authService = inject(AuthService);
@@ -40,6 +41,8 @@ export class NavbarComponent implements OnInit { // Implement OnInit
   constructor() {
     // Initial check
     this.checkAuthStatus();
+    // Check for saved theme preference
+    this.loadThemePreference();
   }
 
   ngOnInit(): void {
@@ -50,6 +53,29 @@ export class NavbarComponent implements OnInit { // Implement OnInit
     // Optional: Subscribe to login/logout events to refresh status and count
     // Consider adding a mechanism in AuthService to emit events on login/logout
     // Or potentially use a regular interval to refresh the count
+  }
+
+  // Load saved theme preference
+  private loadThemePreference(): void {
+    const savedTheme = localStorage.getItem('theme');
+    this.isDarkMode = savedTheme === 'dark';
+    this.applyTheme();
+  }
+
+  // Toggle dark mode
+  toggleDarkMode(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
+    this.applyTheme();
+  }
+
+  // Apply theme to document
+  private applyTheme(): void {
+    if (this.isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }
 
   checkAuthStatus() {
